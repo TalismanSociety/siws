@@ -1,0 +1,10 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "prettier",
+    "plugin:eslint-plugin/recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "eslint-plugin"]
+}
