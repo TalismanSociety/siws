@@ -1,3 +1,19 @@
+<br/>
+
+<p align="center">
+  <a href="https://siws.xyz">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://github.com/TalismanSociety/siws/blob/main/assets/Logo.svg?raw=true">
+        <img alt="siws logo" src="https://github.com/TalismanSociety/siws/blob/main/assets/Logo.svg?raw=true" width="auto" height="60">
+      </picture>
+</a>
+</p>
+<p align="center">
+  Sign-In with Substrate
+<p>
+
+<br>
+
 ![SIWS Example](https://github.com/TalismanSociety/siws/blob/main/assets/siws-example.png?raw=true "SIWS Example")
 
 # Sign-In with Substrate
@@ -6,7 +22,7 @@
 
 ## Problem & Motivation
 
-When building Signet, an enterprise tool for companies to manage their on-chain organisations in the Substrate ecosystem, we needed a way for users to prove that they own an address before they can request for resources relevant to that address. There was no solution yet that offered good user experience, where users could easily understand what they are signing with their wallet. Hence, we decided to build the right tool for our ecosystem.
+When building Signet, an enterprise tool for companies to manage their on-chain organisations in the Substrate ecosystem, we needed a way for users to prove that they own an address before they can request for resources relevant to that address. There was no solution yet that offered good user experience, where users could easily understand what they are signing with their wallet. Inspired by [Sign-in with Ethereum](https://github.com/spruceid/siwe), we decided to build the right tool for the Substrate ecosystem.
 
 ## Features
 
