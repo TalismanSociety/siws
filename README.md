@@ -11,7 +11,7 @@ When building Signet, an enterprise tool for companies to manage their on-chain 
 - Construct human readable sign in message
 - Construct message in stringified JSON format
 - Decode and parse string message of both format into JS object
-- Basication validations (e.g. expiration)
+- Basic validations (e.g. expiration)
 - Utility `Address` to help with dealing with address string
 - Utility `verifySIWS` to help verify that a signature is valid
 - Full Typescript support
@@ -67,5 +67,5 @@ const handleSignInRequest = ({ signature, message, address }) => {
 Check out our [full guide](https://siws-docs.pages.dev/) on how to implement SIWS into your dapp!
 
 ## Support
-- [Web3 Foundation](https://grants.web3.foundation/)
 - [Talisman](https://talisman.xyz)
+- [Web3 Foundation](https://grants.web3.foundation/)
