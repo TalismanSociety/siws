@@ -14,11 +14,11 @@ export class SiwsMessage {
   nonce: string
   /**Will appear as `sign in with your {{chainName}} account:` */
   chainName?: string
-  /**System-specific identifier for  */
+  /**Identifier for chain-specific applications */
   chainId?: number
   /**timestamp that indicates when the signed authentication message is no longer valid. */
   expirationTime?: number
-  /**ISO 8601 datetime string of the current time. */
+  /**timestamp of the current time. */
   issuedAt?: number
 
   constructor(param: Omit<SiwsMessage, "prepareJson" | "asJson" | "prepareMessage" | "sign" | 'signJson'>) {
