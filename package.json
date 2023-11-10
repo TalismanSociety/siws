@@ -2,8 +2,13 @@
   "name": "siws",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -15,5 +20,9 @@
     "eslint-plugin-eslint-plugin": "^5.1.1",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "@polkadot/api": "^10.10.1",
+    "@polkadot/extension-dapp": "^0.46.5"
   }
 }
