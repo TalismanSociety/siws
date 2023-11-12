@@ -1,7 +1,7 @@
 {
-  "name": "siws",
+  "name": "@talismn/siws",
   "version": "0.0.1",
-  "description": "",
+  "description": "<br/>",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -11,8 +11,8 @@
     "build": "tsc",
     "test": "jest"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "chrisling-dev",
+  "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.23.3",
     "@babel/preset-env": "^7.23.3",
@@ -32,5 +32,16 @@
   },
   "dependencies": {
     "@types/jest": "^29.5.8"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TalismanSociety/siws.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TalismanSociety/siws/issues"
+  },
+  "homepage": "https://github.com/TalismanSociety/siws#readme"
 }
