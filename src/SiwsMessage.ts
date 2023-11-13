@@ -1,4 +1,4 @@
-import type { InjectedExtension } from '@polkadot/extension-inject/types'
+import type { InjectedExtension } from "@polkadot/extension-inject/types"
 import { Address } from "./utils"
 
 export class SiwsMessage {
@@ -21,7 +21,9 @@ export class SiwsMessage {
   /**timestamp of the current time. */
   issuedAt?: number
 
-  constructor(param: Omit<SiwsMessage, "prepareJson" | "asJson" | "prepareMessage" | "sign" | 'signJson'>) {
+  constructor(
+    param: Omit<SiwsMessage, "prepareJson" | "asJson" | "prepareMessage" | "sign" | "signJson">
+  ) {
     this.domain = param.domain
     this.address = param.address
     this.statement = param.statement
@@ -95,8 +97,11 @@ export class SiwsMessage {
    * Utility function that wraps @polkadotjs api.
    * @param source You can get this from `web3FromSource(injectedAccount.meta.source)`
    * */
-  async sign(injectedExtension: InjectedExtension): Promise<{ signature: string; message: string }> {
-    if (!injectedExtension.signer.signRaw) throw new Error("Wallet does not support signing message.")
+  async sign(
+    injectedExtension: InjectedExtension
+  ): Promise<{ signature: string; message: string }> {
+    if (!injectedExtension.signer.signRaw)
+      throw new Error("Wallet does not support signing message.")
 
     const message = this.prepareMessage()
     const { signature } = await injectedExtension.signer.signRaw({
@@ -108,22 +113,25 @@ export class SiwsMessage {
     return { signature, message }
   }
 
-    /**
+  /**
    * Utility function that wraps @polkadotjs api.
    * @param source You can get this from `web3FromSource(injectedAccount.meta.source)`
    * */
-    async signJson(injectedExtension: InjectedExtension): Promise<{ signature: string; message: string }> {
-      if (!injectedExtension.signer.signRaw) throw new Error("Wallet does not support signing message.")
-  
-      const message = this.prepareJson()
-      const { signature } = await injectedExtension.signer.signRaw({
-        address: this.address,
-        data: message,
-        type: "payload",
-      })
-  
-      return { signature, message }
-    }
+  async signJson(
+    injectedExtension: InjectedExtension
+  ): Promise<{ signature: string; message: string }> {
+    if (!injectedExtension.signer.signRaw)
+      throw new Error("Wallet does not support signing message.")
+
+    const message = this.prepareJson()
+    const { signature } = await injectedExtension.signer.signRaw({
+      address: this.address,
+      data: message,
+      type: "payload",
+    })
+
+    return { signature, message }
+  }
 
   private validateMessage() {
     if (!this.domain || this.domain.length === 0) throw new Error("SIWS Error: domain is required")

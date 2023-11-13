@@ -1,7 +1,7 @@
 {
   "name": "@talismn/siws",
-  "version": "0.0.1",
-  "description": "<br/>",
+  "version": "0.0.2",
+  "description": "Sign-In with Substrate",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
