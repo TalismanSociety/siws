@@ -18,7 +18,7 @@
 
 # Sign-In with Substrate
 
-`siws` is a package that lets you easily allow users to authenticate themselves with your off chain services by signing in with their Substrate accounts.
+`@talismn/siws` is a package that lets you easily allow users to authenticate themselves with your off chain services by signing in with their Substrate accounts.
 
 ## Problem & Motivation
 
@@ -37,7 +37,7 @@ When building Signet, an enterprise tool for companies to manage their on-chain 
 ## Installation
 
 ```bash
-$ npm install siws
+$ npm install @talismn/siws
 ```
 
 ## Usage
@@ -47,7 +47,7 @@ $ npm install siws
 ```typescript
 // 1. import necessary modules
 import { web3FromSource } from "@polkadot/extension-dapp"
-import { SiwsMessage } from "siws"
+import { SiwsMessage } from "@talismn/siws"
 
 // 2. handle sign in after `account` is selected
 const handleSignIn = async () => {
@@ -72,7 +72,7 @@ const handleSignIn = async () => {
 
 ```typescript
 // 1. import siws
-import { verifySIWS } from "siws"
+import { verifySIWS } from "@talismn/siws"
 
 // 2. backend handler to handle sign in request
 const handleSignInRequest = ({ signature, message, address }) => {
@@ -85,7 +85,7 @@ const handleSignInRequest = ({ signature, message, address }) => {
 
 ## Documentation
 
-Check out our [full guide](https://siws-docs.pages.dev/) on how to implement SIWS into your dapp!
+Check out our [full guide](https://docs.siws.xyz/) on how to implement SIWS into your dapp!
 
 ## Support
 
