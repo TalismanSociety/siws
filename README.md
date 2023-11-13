@@ -3,8 +3,8 @@
 <p align="center">
   <a href="https://siws.xyz">
       <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="https://github.com/TalismanSociety/siws/blob/main/assets/Logo.svg?raw=true">
-        <img alt="siws logo" src="https://github.com/TalismanSociety/siws/blob/main/assets/Logo.svg?raw=true" width="auto" height="60">
+        <source media="(prefers-color-scheme: dark)" srcset="https://github.com/TalismanSociety/siws/blob/main/assets/Logo-dark.svg">
+        <img alt="siws logo" src="https://github.com/TalismanSociety/siws/blob/main/assets/Logo-light.svg" width="auto" height="60">
       </picture>
 </a>
 </p>
