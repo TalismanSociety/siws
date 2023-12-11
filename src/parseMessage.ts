@@ -38,7 +38,7 @@ export const parseMessage = (message: string): SiwsMessage => {
     let uri: string | undefined
     let nonce: string | undefined
     let chainName: string | undefined
-    let chainId: number | undefined
+    let chainId: number | string | undefined
     let expirationTime: number | undefined
     let issuedAt: number | undefined
 
@@ -71,7 +71,7 @@ export const parseMessage = (message: string): SiwsMessage => {
       const [key, value] = line.split(": ")
       if (key === "URI") uri = value
       if (key === "Nonce") nonce = value
-      if (key === "Chain ID") chainId = parseInt(value)
+      if (key === "Chain ID") chainId = value
       if (key === "Issued At") issuedAt = new Date(value).getTime()
       if (key === "Expiration Time") expirationTime = new Date(value).getTime()
     })

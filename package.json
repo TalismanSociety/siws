@@ -1,6 +1,6 @@
 {
   "name": "@talismn/siws",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Sign-In with Substrate",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "jest --verbose --coverage"
   },
   "author": "chrisling-dev",
   "license": "MIT",

@@ -15,7 +15,7 @@ export class SiwsMessage {
   /**Will appear as `sign in with your {{chainName}} account:` */
   chainName?: string
   /**Identifier for chain-specific applications */
-  chainId?: number
+  chainId?: number | string
   /**timestamp that indicates when the signed authentication message is no longer valid. */
   expirationTime?: number
   /**timestamp of the current time. */

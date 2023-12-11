@@ -9,11 +9,13 @@ const invalidMessages = {
   "random string": "random string",
   number: 1234,
   "missing domain": `wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n\nURI: https://siws.xyz\nNonce: 1234567890`,
+  "missing chainName": `siws.xyz wants you to sign in with your account:\n${VALID_ADDRESS}\n\nURI: https://siws.xyz\nNonce: 1234567890`,
   "missing address": `siws.xyz wants you to sign in with your Substrate account:\n\nURI: https://siws.xyz\nNonce: 1234567890`,
   "missing uri": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n\nNonce: 1234567890`,
   "missing nonce": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n\nURI: https://siws.xyz`,
   "missing body": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}`,
   "missing body with statement": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n\nThis is a test statement`,
+  "missing statement text": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n\n\n\nNonce: 1234567890\nURI: https://siws.xyz`,
 }
 
 describe("parseMessage", () => {
@@ -39,6 +41,32 @@ describe("parseMessage", () => {
       expect(() => parseMessage(invalidMessage.toString())).toThrow(
         "SIWS Error: Invalid SIWS message."
       )
+    })
+  })
+})
+
+describe("parseJson", () => {
+  const validJsonMessage = validSiwsMessage.prepareJson()
+
+  const invalidJsons = {
+    "invalid address": JSON.stringify({ ...validSiwsMessage.asJson, address: "invalid" }),
+    "missing domain": JSON.stringify({ ...validSiwsMessage.asJson, domain: undefined }),
+    "missing address": JSON.stringify({ ...validSiwsMessage.asJson, address: undefined }),
+    "missing uri": JSON.stringify({ ...validSiwsMessage.asJson, uri: undefined }),
+    "missing nonce": JSON.stringify({ ...validSiwsMessage.asJson, nonce: undefined }),
+  }
+  it("should parse a valid json message correctly", () => {
+    const parsed = parseMessage(validJsonMessage)
+    expect(parsed.asJson).toStrictEqual(validSiwsMessage.asJson)
+  })
+
+  it("should throw error if message is not valid json", () => {
+    expect(() => parseMessage("")).toThrow("SIWS Error: Invalid SIWS message.")
+  })
+
+  Object.entries(invalidJsons).forEach(([key, invalidJson]) => {
+    it(`should throw error when json is ${key}`, () => {
+      expect(() => parseMessage(invalidJson)).toThrow("SIWS Error: Invalid SIWS message.")
     })
   })
 })
