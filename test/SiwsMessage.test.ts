@@ -3,6 +3,16 @@ import { parseMessage } from "../src/parseMessage"
 import { VALID_ADDRESS, validParams } from "./config"
 import type { InjectedExtension } from "@polkadot/extension-inject/types"
 
+jest.mock("@azns/resolver-core", () => ({
+  resolveDomainToAddress: jest.fn((a0id: string) => {
+    const validAzeroIDs = {
+      "siws.azero": "5DFMVCaWNPcSdPVmK7d6g81ZV58vw5jkKbQk8vR4FSxyhJBD",
+    }
+
+    return { address: validAzeroIDs[a0id] }
+  }),
+}))
+
 const validSiwsMessage = new SiwsMessage(validParams)
 const mockedInjectedExtension = {
   signer: {
@@ -94,9 +104,9 @@ describe("SiwsMessage", () => {
       const message = parseMessage(messageString) // to capture the issued at timestamp which is generated
       const parsedMessage = messageString.split("\n\n")
       expect(parsedMessage).toEqual([
-        `${validParams.domain} wants you to sign in with your Substrate account:\n${validParams.address}`,
+        `${validParams.domain} wants you to sign in with your Substrate account:\n${validParams.address}\n(${validParams.azeroId})`,
         validParams.statement,
-        `URI: ${validParams.uri}\nAzero ID: ${validParams.azeroId}\nChain ID: ${validParams.chainId}\nNonce: ${
+        `URI: ${validParams.uri}\nChain ID: ${validParams.chainId}\nNonce: ${
           validParams.nonce
         }\nIssued At: ${new Date(message.issuedAt ?? 0).toISOString()}\nExpiration Time: ${new Date(
           validParams.expirationTime ?? 0
@@ -154,6 +164,20 @@ describe("SiwsMessage", () => {
       })
 
       expect(signature).toEqual("mockedSignature")
+    })
+  })
+
+  describe("verifyAzeroId", () => {
+    it("should return true if azero id is valid", async () => {
+      const siwsMessage = new SiwsMessage(validParams)
+      const validAzeroId = await siwsMessage.verifyAzeroId()
+      expect(validAzeroId).toEqual(true)
+    })
+
+    it("should return false if azero id is invalid", async () => {
+      const siwsMessage = new SiwsMessage({ ...validParams, azeroId: "thisisafake.azero" })
+      const validAzeroId = await siwsMessage.verifyAzeroId()
+      expect(validAzeroId).toEqual(false)
     })
   })
 })

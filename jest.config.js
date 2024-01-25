@@ -7,6 +7,8 @@
 const config = {
   clearMocks: true,
   coverageProvider: "v8",
-};
 
-module.exports = config;
+  transformIgnorePatterns: ["/node_modules/(?!@azns/resolver-core).+\\.js$"],
+}
+
+module.exports = config

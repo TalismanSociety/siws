@@ -1,4 +1,5 @@
 import type { InjectedExtension } from "@polkadot/extension-inject/types"
+import { resolveDomainToAddress } from "@azns/resolver-core"
 import { Address } from "./utils"
 
 export class SiwsMessage {
@@ -6,8 +7,8 @@ export class SiwsMessage {
   domain: string
   /**Substrate address signing the message. */
   address: string
-  /**Azero domain resolutions */
-  azeroId?: string;
+  /**Azero ID */
+  azeroId?: string
   /**Human-readable ASCII assertion that the user will sign, and it must not contain `\n`. */
   statement?: string
   /**RFC 3986 URI referring to the resource that is the subject of the signing. */
@@ -24,7 +25,10 @@ export class SiwsMessage {
   issuedAt?: number
 
   constructor(
-    param: Omit<SiwsMessage, "prepareJson" | "asJson" | "prepareMessage" | "sign" | "signJson">
+    param: Omit<
+      SiwsMessage,
+      "prepareJson" | "asJson" | "prepareMessage" | "sign" | "signJson" | "verifyAzeroId"
+    >
   ) {
     this.domain = param.domain
     this.address = param.address
@@ -75,14 +79,14 @@ export class SiwsMessage {
     let message = `${this.domain} wants you to sign in with your ${
       this.chainName ?? "Substrate"
     } account:\n`
-    message += `${this.address}\n\n`
+    message += `${this.address}\n`
+    if (this.azeroId) message += `(${this.azeroId})\n`
+    message += "\n"
 
     if (this.statement) message += `${this.statement}\n\n`
 
     const uriField = `URI: ${this.uri}`
     const body = [uriField]
-
-    if (this.azeroId) body.push(`Azero ID: ${this.azeroId}`)
 
     if (this.chainId) body.push(`Chain ID: ${this.chainId}`)
 
@@ -171,6 +175,20 @@ export class SiwsMessage {
       // token has expired
       if (expirationTimeDate.getTime() <= new Date().getTime())
         throw new Error("SIWS Error: message has expired!")
+    }
+  }
+
+  async verifyAzeroId() {
+    if (!this.azeroId) return true
+    try {
+      const { address } = await resolveDomainToAddress(this.azeroId)
+
+      if (!address) return false
+      const parsedAddress = Address.fromSs58(this.address)
+      const resolvedAddress = Address.fromSs58(address)
+      return !!parsedAddress && !!resolvedAddress && parsedAddress.isEqual(resolvedAddress)
+    } catch (e) {
+      return false
     }
   }
 }

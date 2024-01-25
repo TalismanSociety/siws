@@ -24,6 +24,7 @@
     "eslint-plugin-eslint-plugin": "^5.1.1",
     "jest": "^29.7.0",
     "prettier": "^3.0.3",
+    "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
@@ -31,6 +32,7 @@
     "@polkadot/extension-dapp": "^0.46.5"
   },
   "dependencies": {
+    "@azns/resolver-core": "^1.6.0",
     "@types/jest": "^29.5.8"
   },
   "directories": {

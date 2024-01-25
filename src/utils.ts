@@ -16,9 +16,13 @@ export const verifySIWS = async (message: string, signature: string, address: st
   await cryptoWaitReady()
   const verification = signatureVerify(message, signature, address)
 
-  if(!verification) throw new Error("SIWS Error: Invalid signature.")
+  if (!verification) throw new Error("SIWS Error: Invalid signature.")
 
-  return parseMessage(message)
+  const siwsMessage = parseMessage(message)
+  const validAzeroId = await siwsMessage.verifyAzeroId()
+  if (!validAzeroId) throw new Error("SIWS Error: Invalid Azero ID.")
+
+  return siwsMessage
 }
 
 /**

@@ -3,8 +3,18 @@ import { SiwsMessage } from "./SiwsMessage"
 
 export const parseJson = (json: string): SiwsMessage | undefined => {
   try {
-    const { domain, address, azeroId, statement, uri, nonce, chainName, chainId, expirationTime, issuedAt } =
-      JSON.parse(json)
+    const {
+      domain,
+      address,
+      azeroId,
+      statement,
+      uri,
+      nonce,
+      chainName,
+      chainId,
+      expirationTime,
+      issuedAt,
+    } = JSON.parse(json)
 
     if (!domain || !address || !uri || !nonce) return undefined
 
@@ -63,6 +73,10 @@ export const parseMessage = (message: string): SiwsMessage => {
     address = headers[1]
     if (!address || !Address.fromSs58(address)) throw new Error()
 
+    // remove the brackets
+    azeroId = headers[2]?.slice(1, -1)
+    if (azeroId && !azeroId.toLowerCase().endsWith(".azero")) throw new Error("Invalid Azero ID")
+
     // parse statement: statement exists if there are 3 sections
     statement = sections[2] ? sections[1] : undefined
     if (statement !== undefined && statement.length === 0) throw new Error()
@@ -72,7 +86,6 @@ export const parseMessage = (message: string): SiwsMessage => {
     bodyLines.forEach((line) => {
       const [key, value] = line.split(": ")
       if (key === "URI") uri = value
-      if (key === "Azero ID") azeroId = value
       if (key === "Nonce") nonce = value
       if (key === "Chain ID") chainId = value
       if (key === "Issued At") issuedAt = new Date(value).getTime()
