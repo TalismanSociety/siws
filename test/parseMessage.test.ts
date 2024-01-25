@@ -16,6 +16,7 @@ const invalidMessages = {
   "missing body": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}`,
   "missing body with statement": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n\nThis is a test statement`,
   "missing statement text": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n\n\n\nNonce: 1234567890\nURI: https://siws.xyz`,
+  "invalid azero id": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n(siws.azeerrooooo)\n\nThis is a test statement\n\nNonce: 1234567890\nURI: https://siws.xyz`,
 }
 
 describe("parseMessage", () => {
