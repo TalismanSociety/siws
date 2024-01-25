@@ -11,6 +11,7 @@ export const validParams = {
   address: VALID_ADDRESS,
   statement: "This is a test statement",
   uri: "https://siws.xyz",
+  azeroId: "siws.azero",
   nonce: "1234567890",
   chainId: "polkadot",
   // expires in 30 seconds

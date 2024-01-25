@@ -6,6 +6,8 @@ export class SiwsMessage {
   domain: string
   /**Substrate address signing the message. */
   address: string
+  /**Azero domain resolutions */
+  azeroId?: string;
   /**Human-readable ASCII assertion that the user will sign, and it must not contain `\n`. */
   statement?: string
   /**RFC 3986 URI referring to the resource that is the subject of the signing. */
@@ -26,6 +28,7 @@ export class SiwsMessage {
   ) {
     this.domain = param.domain
     this.address = param.address
+    this.azeroId = param.azeroId
     this.statement = param.statement
     this.uri = param.uri
     this.nonce = param.nonce
@@ -44,6 +47,7 @@ export class SiwsMessage {
     return {
       domain: this.domain,
       address: this.address,
+      azeroId: this.azeroId,
       statement: this.statement,
       uri: this.uri,
       nonce: this.nonce,
@@ -77,6 +81,8 @@ export class SiwsMessage {
 
     const uriField = `URI: ${this.uri}`
     const body = [uriField]
+
+    if (this.azeroId) body.push(`Azero ID: ${this.azeroId}`)
 
     if (this.chainId) body.push(`Chain ID: ${this.chainId}`)
 

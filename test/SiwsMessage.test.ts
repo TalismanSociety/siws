@@ -96,7 +96,7 @@ describe("SiwsMessage", () => {
       expect(parsedMessage).toEqual([
         `${validParams.domain} wants you to sign in with your Substrate account:\n${validParams.address}`,
         validParams.statement,
-        `URI: ${validParams.uri}\nChain ID: ${validParams.chainId}\nNonce: ${
+        `URI: ${validParams.uri}\nAzero ID: ${validParams.azeroId}\nChain ID: ${validParams.chainId}\nNonce: ${
           validParams.nonce
         }\nIssued At: ${new Date(message.issuedAt ?? 0).toISOString()}\nExpiration Time: ${new Date(
           validParams.expirationTime ?? 0
