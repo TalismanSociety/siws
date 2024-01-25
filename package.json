@@ -4,6 +4,7 @@
   "description": "Sign-In with Substrate",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "commonjs",
   "files": [
     "/dist"
   ],

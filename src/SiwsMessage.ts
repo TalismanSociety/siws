@@ -1,5 +1,4 @@
 import type { InjectedExtension } from "@polkadot/extension-inject/types"
-import { resolveDomainToAddress } from "@azns/resolver-core"
 import { Address } from "./utils"
 
 export class SiwsMessage {
@@ -181,6 +180,7 @@ export class SiwsMessage {
   async verifyAzeroId() {
     if (!this.azeroId) return true
     try {
+      const { resolveDomainToAddress } = await import("@azns/resolver-core")
       const { address } = await resolveDomainToAddress(this.azeroId)
 
       if (!address) return false

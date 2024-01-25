@@ -2,10 +2,10 @@
   "compilerOptions": {
     "declaration": true,
     "esModuleInterop": true,
-    "module": "ESNext",
+    "module": "CommonJS",
     "moduleResolution": "Node",
     "outDir": "./dist",
-    "target": "es2015",
+    "target": "ESNext",
     "skipLibCheck": true
   },
   "include": ["src/**/*"],
