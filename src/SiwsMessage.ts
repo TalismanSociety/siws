@@ -1,15 +1,15 @@
 import type { InjectedExtension } from "@polkadot/extension-inject/types"
 import { Address } from "./utils"
 
-export const siwsVersions: string[] = ["1.0.0"];
-export type SiwsVersion = typeof siwsVersions[number];
+export const siwsVersions: string[] = ["1.0.0"]
+export type SiwsVersion = typeof siwsVersions[number]
 
 export function isSiwsVersion(version?: string): version is SiwsVersion {
-  return siwsVersions.indexOf(version as SiwsVersion) !== -1;
+  return siwsVersions.indexOf(version as SiwsVersion) !== -1
 }
 
 export namespace Siws {
-  export const CURRENT_VERSION: SiwsVersion = "1.0.0";
+  export const CURRENT_VERSION: SiwsVersion = "1.0.0"
 }
 export class SiwsMessage {
   /**RFC 4501 dns authority that is requesting the signing. */
@@ -33,13 +33,13 @@ export class SiwsMessage {
   /**timestamp of the current time. */
   issuedAt?: number
   /**timestamp that indicates a minimum time before which the signed authentication message is not valid */
-  notBefore?: number;
+  notBefore?: number
   /**Version of this message */
-  version: SiwsVersion;
+  version: SiwsVersion
   /**Application-specific value to be included in the signed payload */
-  requestId?: string;
+  requestId?: string
   /**List of information or references to information the user wishes to have resolved as part of the authentication by the relying party; express as RFC 3986 URIs */
-  resources?: string[];
+  resources?: string[]
 
 
   constructor(
@@ -58,10 +58,10 @@ export class SiwsMessage {
     this.chainName = param.chainName
     this.expirationTime = param.expirationTime
     this.issuedAt = param.issuedAt
-    this.notBefore = param.notBefore;
+    this.notBefore = param.notBefore
     this.version = param.version || Siws.CURRENT_VERSION,
-    this.requestId = param.requestId;
-    this.resources = param.resources?.length ? [...param.resources] : undefined;
+    this.requestId = param.requestId
+    this.resources = param.resources?.length ? [...param.resources] : undefined
 
     this.validateMessage()
   }
@@ -114,7 +114,7 @@ export class SiwsMessage {
     const uriField = `URI: ${this.uri}`
     const body = [uriField]
 
-    body.push(`Version: ${this.version}`);
+    body.push(`Version: ${this.version}`)
 
     if (this.chainId) body.push(`Chain ID: ${this.chainId}`)
 
@@ -192,7 +192,7 @@ export class SiwsMessage {
     // uri is required for wallets validation and to help prevent phishing attacks
     if (!this.uri || this.uri.length === 0) throw new Error("SIWS Error: uri is required")
 
-    if (!this?.version) throw new Error("SIWS Error: version is required");
+    if (!this?.version) throw new Error("SIWS Error: version is required")
     if (!isSiwsVersion(this?.version)) throw new Error("SIWS Error: version is not a valid version")
 
     // nonce is required
@@ -223,7 +223,7 @@ export class SiwsMessage {
     }
 
     if (this.notBefore) {
-      const notBeforeTimeDate = new Date(this.notBefore);
+      const notBeforeTimeDate = new Date(this.notBefore)
       // invalid timestamp
       if (isNaN(notBeforeTimeDate.getTime()))
         throw new Error("SIWS Error: notBefore is not a valid date")

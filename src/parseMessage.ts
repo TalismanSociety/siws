@@ -108,13 +108,13 @@ export const parseMessage = (message: string): SiwsMessage => {
     })
 
     // parse additional resources
-    const resourcesMatch = /Resources:\s*\n((?:- [^\n]*\n*)+)/g.exec(body);
+    const resourcesMatch = /Resources:\s*\n((?:- [^\n]*\n*)+)/g.exec(body)
     if (resourcesMatch?.length) {
-      resources = [];
+      resources = []
       const resourcesList = resourcesMatch[1]
-      const resourceMatches = resourcesList.matchAll(/- ([^\n]*)\n?/g);
+      const resourceMatches = resourcesList.matchAll(/- ([^\n]*)\n?/g)
       for (const resource of resourceMatches) {
-        resources.push(resource[1]);
+        resources.push(resource[1])
       }
     }
 
