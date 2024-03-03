@@ -9,14 +9,18 @@ export const parseJson = (json: string): SiwsMessage | undefined => {
       azeroId,
       statement,
       uri,
+      version,
       nonce,
       chainName,
       chainId,
       expirationTime,
       issuedAt,
+      notBefore,
+      requestId,
+      resources
     } = JSON.parse(json)
 
-    if (!domain || !address || !uri || !nonce) return undefined
+    if (!domain || !address || !uri || !version || !nonce) return undefined
 
     return new SiwsMessage({
       domain,
@@ -24,11 +28,15 @@ export const parseJson = (json: string): SiwsMessage | undefined => {
       azeroId,
       statement,
       uri,
+      version,
       nonce,
       chainName,
       chainId,
       expirationTime,
       issuedAt,
+      notBefore,
+      requestId,
+      resources,
     })
   } catch (e) {
     throw new Error("SIWS Error: Invalid SIWS json message.")
@@ -48,11 +56,15 @@ export const parseMessage = (message: string): SiwsMessage => {
     let azeroId: string | undefined
     let statement: string | undefined
     let uri: string | undefined
+    let version: string | undefined
     let nonce: string | undefined
     let chainName: string | undefined
     let chainId: number | string | undefined
     let expirationTime: number | undefined
     let issuedAt: number | undefined
+    let notBefore: number | undefined
+    let requestId: string | undefined
+    let resources: string[] | undefined
 
     const sections = message.split("\n\n")
     const firstSection = sections[0]
@@ -86,11 +98,26 @@ export const parseMessage = (message: string): SiwsMessage => {
     bodyLines.forEach((line) => {
       const [key, value] = line.split(": ")
       if (key === "URI") uri = value
+      if (key === "Version") version = value
       if (key === "Nonce") nonce = value
       if (key === "Chain ID") chainId = value
       if (key === "Issued At") issuedAt = new Date(value).getTime()
       if (key === "Expiration Time") expirationTime = new Date(value).getTime()
+      if (key === "Not Before") notBefore = new Date(value).getTime()
+      if (key === "Request ID") requestId = value
     })
+
+    // parse additional resources
+    const resourcesMatch = /Resources:\s*\n((?:- [^\n]*\n*)+)/g.exec(body);
+    if (resourcesMatch?.length) {
+      resources = [];
+      const resourcesList = resourcesMatch[1]
+      const resourceMatches = resourcesList.matchAll(/- ([^\n]*)\n?/g);
+      for (const resource of resourceMatches) {
+        resources.push(resource[1]);
+      }
+    }
+
 
     // missing important fields
     if (!domain || !address || !uri || !nonce || !chainName) throw new Error()
@@ -100,14 +127,18 @@ export const parseMessage = (message: string): SiwsMessage => {
       address,
       statement,
       uri,
+      version,
       azeroId,
       nonce,
       chainName,
       chainId,
       expirationTime,
       issuedAt,
+      notBefore,
+      requestId,
+      resources
     })
   } catch (e) {
-    throw new Error("SIWS Error: Invalid SIWS message.")
+    throw new Error("SIWS Error: Invalid SIWS message.", { cause: e })
   }
 }
