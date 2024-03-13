@@ -77,8 +77,45 @@ describe("SiwsMessage", () => {
     })
 
     it("should throw error when message has expired", () => {
-      const invalidParams = { ...validParams, expirationTime: new Date().getTime() - 1000 }
+      const { notBefore, ...invalidParams } = { ...validParams, expirationTime: new Date().getTime() - 1000 }
       expect(() => new SiwsMessage(invalidParams)).toThrow("SIWS Error: message has expired!")
+    })
+
+    it("should throw error if notBefore is invalid", () => {
+      const invalidParams = { ...validParams, notBefore: "intvalidTimestamp" as any }
+      expect(() => new SiwsMessage(invalidParams)).toThrow(
+        "SIWS Error: notBefore is not a valid date"
+      )
+    })
+
+    it("should throw error when if notBefore is at or after expirationTime", () => {
+      const now = new Date().getTime()
+      const invalidParams = {
+        ...validParams,
+        issuedAt: now,
+        expirationTime: now + 1000,
+        notBefore: now + 1000,
+      }
+      expect(() => new SiwsMessage(invalidParams)).toThrow("SIWS Error: expirationTime must be greater than notBefore")
+    })
+
+    it("should throw error if requestId contains newlines", () => {
+      const invalidParams = {
+        ...validParams,
+        requestId: `identifier
+on two lines`
+      }
+      expect(() => new SiwsMessage(invalidParams)).toThrow("SIWS Error: requestId must not contain newlines")
+    })
+
+    it("should throw error if resources are not valid URIs", () => {
+      const invalidParams = {
+        ...validParams,
+        resources: [
+          'invalid#Protocol://some-host:80/path/to/resource'
+        ]
+      }
+      expect(() => new SiwsMessage(invalidParams)).toThrow("SIWS Error: resources must be valid URLs")
     })
   })
 
@@ -106,11 +143,11 @@ describe("SiwsMessage", () => {
       expect(parsedMessage).toEqual([
         `${validParams.domain} wants you to sign in with your Substrate account:\n${validParams.address}\n(${validParams.azeroId})`,
         validParams.statement,
-        `URI: ${validParams.uri}\nChain ID: ${validParams.chainId}\nNonce: ${
+        `URI: ${validParams.uri}\nVersion: 1.0.0\nChain ID: ${validParams.chainId}\nNonce: ${
           validParams.nonce
         }\nIssued At: ${new Date(message.issuedAt ?? 0).toISOString()}\nExpiration Time: ${new Date(
           validParams.expirationTime ?? 0
-        ).toISOString()}`,
+        ).toISOString()}\nNot Before: ${new Date(message.notBefore ?? 0).toISOString()}\nRequest ID: ${message.requestId}\nResources:\n${message.resources?.map(r=> `- ${r}`).join('\n')}`,
       ])
     })
   })

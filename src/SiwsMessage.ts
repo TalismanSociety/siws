@@ -1,6 +1,16 @@
 import type { InjectedExtension } from "@polkadot/extension-inject/types"
 import { Address } from "./utils"
 
+export const siwsVersions: string[] = ["1.0.0"]
+export type SiwsVersion = typeof siwsVersions[number]
+
+export function isSiwsVersion(version?: string): version is SiwsVersion {
+  return siwsVersions.indexOf(version as SiwsVersion) !== -1
+}
+
+export namespace Siws {
+  export const CURRENT_VERSION: SiwsVersion = "1.0.0"
+}
 export class SiwsMessage {
   /**RFC 4501 dns authority that is requesting the signing. */
   domain: string
@@ -22,6 +32,15 @@ export class SiwsMessage {
   expirationTime?: number
   /**timestamp of the current time. */
   issuedAt?: number
+  /**timestamp that indicates a minimum time before which the signed authentication message is not valid */
+  notBefore?: number
+  /**Version of this message */
+  version: SiwsVersion
+  /**Application-specific value to be included in the signed payload */
+  requestId?: string
+  /**List of information or references to information the user wishes to have resolved as part of the authentication by the relying party; express as RFC 3986 URIs */
+  resources?: string[]
+
 
   constructor(
     param: Omit<
@@ -39,6 +58,10 @@ export class SiwsMessage {
     this.chainName = param.chainName
     this.expirationTime = param.expirationTime
     this.issuedAt = param.issuedAt
+    this.notBefore = param.notBefore
+    this.version = param.version || Siws.CURRENT_VERSION,
+    this.requestId = param.requestId
+    this.resources = param.resources?.length ? [...param.resources] : undefined
 
     this.validateMessage()
   }
@@ -57,6 +80,10 @@ export class SiwsMessage {
       chainId: this.chainId,
       issuedAt: this.issuedAt,
       expirationTime: this.expirationTime,
+      notBefore: this.notBefore,
+      version: this.version,
+      requestId: this.requestId,
+      resources: this.resources?.length ? [...this.resources] : undefined,
     }
   }
 
@@ -87,6 +114,8 @@ export class SiwsMessage {
     const uriField = `URI: ${this.uri}`
     const body = [uriField]
 
+    body.push(`Version: ${this.version}`)
+
     if (this.chainId) body.push(`Chain ID: ${this.chainId}`)
 
     body.push(`Nonce: ${this.nonce}`)
@@ -96,6 +125,17 @@ export class SiwsMessage {
 
     if (this.expirationTime)
       body.push(`Expiration Time: ${new Date(this.expirationTime).toISOString()}`)
+
+    if (this.notBefore)
+      body.push(`Not Before: ${new Date(this.notBefore).toISOString()}`)
+
+    if (this.requestId)
+      body.push(`Request ID: ${this.requestId}`)
+
+    if (this.resources?.length) {
+      body.push(`Resources:`)
+      this.resources.forEach((resource) => body.push(`- ${resource}`))
+    }
 
     message += body.join("\n")
 
@@ -152,6 +192,9 @@ export class SiwsMessage {
     // uri is required for wallets validation and to help prevent phishing attacks
     if (!this.uri || this.uri.length === 0) throw new Error("SIWS Error: uri is required")
 
+    if (!this?.version) throw new Error("SIWS Error: version is required")
+    if (!isSiwsVersion(this?.version)) throw new Error("SIWS Error: version is not a valid version")
+
     // nonce is required
     if (!this.nonce || this.nonce.length === 0) throw new Error("SIWS Error: nonce is required")
 
@@ -171,9 +214,28 @@ export class SiwsMessage {
       if (this.issuedAt && expirationTimeDate.getTime() <= new Date(this.issuedAt).getTime())
         throw new Error("SIWS Error: expirationTime must be greater than issuedAt")
 
+      if (this?.notBefore && this.expirationTime <= this.notBefore)
+        throw new Error("SIWS Error: expirationTime must be greater than notBefore")
+
       // token has expired
       if (expirationTimeDate.getTime() <= new Date().getTime())
         throw new Error("SIWS Error: message has expired!")
+    }
+
+    if (this.notBefore) {
+      const notBeforeTimeDate = new Date(this.notBefore)
+      // invalid timestamp
+      if (isNaN(notBeforeTimeDate.getTime()))
+        throw new Error("SIWS Error: notBefore is not a valid date")
+    }
+
+    if (this.requestId && !/^[^\n]*$/g.test(this.requestId))
+      throw new Error("SIWS Error: requestId must not contain newlines")
+
+    if (this.resources?.length) {
+      this.resources.forEach((resource) => {
+        if (!URL.canParse(resource)) throw new Error(`SIWS Error: resources must be valid URLs: ${resource}`)
+      })
     }
   }
 
