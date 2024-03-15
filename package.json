@@ -1,10 +1,10 @@
 {
   "name": "@talismn/siws",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Sign-In with Substrate",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "type": "commonjs",
+  "type": "module",
   "files": [
     "/dist"
   ],

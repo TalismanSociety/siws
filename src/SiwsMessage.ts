@@ -1,8 +1,8 @@
 import type { InjectedExtension } from "@polkadot/extension-inject/types"
-import { Address } from "./utils"
+import { Address } from "./utils.js"
 
 export const siwsVersions: string[] = ["1.0.0"]
-export type SiwsVersion = typeof siwsVersions[number]
+export type SiwsVersion = (typeof siwsVersions)[number]
 
 export function isSiwsVersion(version?: string): version is SiwsVersion {
   return siwsVersions.indexOf(version as SiwsVersion) !== -1
@@ -41,7 +41,6 @@ export class SiwsMessage {
   /**List of information or references to information the user wishes to have resolved as part of the authentication by the relying party; express as RFC 3986 URIs */
   resources?: string[]
 
-
   constructor(
     param: Omit<
       SiwsMessage,
@@ -59,7 +58,7 @@ export class SiwsMessage {
     this.expirationTime = param.expirationTime
     this.issuedAt = param.issuedAt
     this.notBefore = param.notBefore
-    this.version = param.version || Siws.CURRENT_VERSION,
+    this.version = param.version || Siws.CURRENT_VERSION
     this.requestId = param.requestId
     this.resources = param.resources?.length ? [...param.resources] : undefined
 
@@ -126,11 +125,9 @@ export class SiwsMessage {
     if (this.expirationTime)
       body.push(`Expiration Time: ${new Date(this.expirationTime).toISOString()}`)
 
-    if (this.notBefore)
-      body.push(`Not Before: ${new Date(this.notBefore).toISOString()}`)
+    if (this.notBefore) body.push(`Not Before: ${new Date(this.notBefore).toISOString()}`)
 
-    if (this.requestId)
-      body.push(`Request ID: ${this.requestId}`)
+    if (this.requestId) body.push(`Request ID: ${this.requestId}`)
 
     if (this.resources?.length) {
       body.push(`Resources:`)
@@ -234,7 +231,8 @@ export class SiwsMessage {
 
     if (this.resources?.length) {
       this.resources.forEach((resource) => {
-        if (!URL.canParse(resource)) throw new Error(`SIWS Error: resources must be valid URLs: ${resource}`)
+        if (!URL.canParse(resource))
+          throw new Error(`SIWS Error: resources must be valid URLs: ${resource}`)
       })
     }
   }
@@ -243,7 +241,9 @@ export class SiwsMessage {
     if (!this.azeroId) return true
     try {
       const { resolveDomainToAddress } = await import("@azns/resolver-core")
-      const { address } = await resolveDomainToAddress(this.azeroId)
+      const { address } = await resolveDomainToAddress(this.azeroId, {
+        chainId: this.azeroId.toLowerCase().endsWith("tzero") ? "alephzero-testnet" : "alephzero",
+      })
 
       if (!address) return false
       const parsedAddress = Address.fromSs58(this.address)

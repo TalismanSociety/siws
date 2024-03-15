@@ -1,5 +1,5 @@
-import { Address } from "./utils"
-import { SiwsMessage } from "./SiwsMessage"
+import { Address, isAzeroId } from "./utils.js"
+import { SiwsMessage } from "./SiwsMessage.js"
 
 export const parseJson = (json: string): SiwsMessage | undefined => {
   try {
@@ -17,7 +17,7 @@ export const parseJson = (json: string): SiwsMessage | undefined => {
       issuedAt,
       notBefore,
       requestId,
-      resources
+      resources,
     } = JSON.parse(json)
 
     if (!domain || !address || !uri || !version || !nonce) return undefined
@@ -87,7 +87,7 @@ export const parseMessage = (message: string): SiwsMessage => {
 
     // remove the brackets
     azeroId = headers[2]?.slice(1, -1)
-    if (azeroId && !azeroId.toLowerCase().endsWith(".azero")) throw new Error("Invalid Azero ID")
+    if (azeroId && !isAzeroId(azeroId)) throw new Error("Invalid Azero ID format")
 
     // parse statement: statement exists if there are 3 sections
     statement = sections[2] ? sections[1] : undefined
@@ -118,7 +118,6 @@ export const parseMessage = (message: string): SiwsMessage => {
       }
     }
 
-
     // missing important fields
     if (!domain || !address || !uri || !nonce || !chainName) throw new Error()
 
@@ -136,7 +135,7 @@ export const parseMessage = (message: string): SiwsMessage => {
       issuedAt,
       notBefore,
       requestId,
-      resources
+      resources,
     })
   } catch (e) {
     throw new Error("SIWS Error: Invalid SIWS message.", { cause: e })

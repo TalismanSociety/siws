@@ -5,8 +5,12 @@ import {
   signatureVerify,
 } from "@polkadot/util-crypto"
 import { hexToU8a, isHex, u8aToHex } from "@polkadot/util"
-import { parseMessage } from "./parseMessage"
+import { parseMessage } from "./parseMessage.js"
 
+export const isAzeroId = (azeroId: string) => {
+  const lowerCased = azeroId.toLowerCase()
+  return lowerCased.endsWith(".azero") || lowerCased.endsWith(".tzero")
+}
 /**
  * A util function that verifies that the `message` is signed by the `address` and matches the `signature`,
  * and returns a parsed SiwsMessage instance if the signature is valid.
