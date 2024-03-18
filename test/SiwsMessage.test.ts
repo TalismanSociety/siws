@@ -1,7 +1,9 @@
+import { Keyring } from "@polkadot/api"
 import { SiwsMessage } from "../src/SiwsMessage"
 import { parseMessage } from "../src/parseMessage"
 import { VALID_ADDRESS, validParams } from "./config"
 import type { InjectedExtension } from "@polkadot/extension-inject/types"
+import { u8aToHex } from "@polkadot/util"
 
 jest.mock("@azns/resolver-core", () => ({
   resolveDomainToAddress: jest.fn((a0id: string) => {
@@ -29,12 +31,13 @@ describe("SiwsMessage", () => {
       expect(validSiwsMessage.address).toEqual(VALID_ADDRESS)
     })
 
-    it("should throw error when address is invalid", () => {
-      const invalidParams = { ...validParams, address: "invalid" }
-      expect(() => new SiwsMessage(invalidParams)).toThrow(
-        "SIWS Error: address is not a valid substrate address"
-      )
-    })
+    // TODO: allow ethereum address
+    // it("should throw error when address is invalid", () => {
+    //   const invalidParams = { ...validParams, address: "invalid" }
+    //   expect(() => new SiwsMessage(invalidParams)).toThrow(
+    //     "SIWS Error: address is not a valid substrate address"
+    //   )
+    // })
 
     it("should throw error if domain is invalid", () => {
       const invalidParams = { ...validParams, domain: "" }
@@ -77,7 +80,10 @@ describe("SiwsMessage", () => {
     })
 
     it("should throw error when message has expired", () => {
-      const { notBefore, ...invalidParams } = { ...validParams, expirationTime: new Date().getTime() - 1000 }
+      const { notBefore, ...invalidParams } = {
+        ...validParams,
+        expirationTime: new Date().getTime() - 1000,
+      }
       expect(() => new SiwsMessage(invalidParams)).toThrow("SIWS Error: message has expired!")
     })
 
@@ -96,26 +102,30 @@ describe("SiwsMessage", () => {
         expirationTime: now + 1000,
         notBefore: now + 1000,
       }
-      expect(() => new SiwsMessage(invalidParams)).toThrow("SIWS Error: expirationTime must be greater than notBefore")
+      expect(() => new SiwsMessage(invalidParams)).toThrow(
+        "SIWS Error: expirationTime must be greater than notBefore"
+      )
     })
 
     it("should throw error if requestId contains newlines", () => {
       const invalidParams = {
         ...validParams,
         requestId: `identifier
-on two lines`
+on two lines`,
       }
-      expect(() => new SiwsMessage(invalidParams)).toThrow("SIWS Error: requestId must not contain newlines")
+      expect(() => new SiwsMessage(invalidParams)).toThrow(
+        "SIWS Error: requestId must not contain newlines"
+      )
     })
 
     it("should throw error if resources are not valid URIs", () => {
       const invalidParams = {
         ...validParams,
-        resources: [
-          'invalid#Protocol://some-host:80/path/to/resource'
-        ]
+        resources: ["invalid#Protocol://some-host:80/path/to/resource"],
       }
-      expect(() => new SiwsMessage(invalidParams)).toThrow("SIWS Error: resources must be valid URLs")
+      expect(() => new SiwsMessage(invalidParams)).toThrow(
+        "SIWS Error: resources must be valid URLs"
+      )
     })
   })
 
@@ -147,7 +157,11 @@ on two lines`
           validParams.nonce
         }\nIssued At: ${new Date(message.issuedAt ?? 0).toISOString()}\nExpiration Time: ${new Date(
           validParams.expirationTime ?? 0
-        ).toISOString()}\nNot Before: ${new Date(message.notBefore ?? 0).toISOString()}\nRequest ID: ${message.requestId}\nResources:\n${message.resources?.map(r=> `- ${r}`).join('\n')}`,
+        ).toISOString()}\nNot Before: ${new Date(
+          message.notBefore ?? 0
+        ).toISOString()}\nRequest ID: ${message.requestId}\nResources:\n${message.resources
+          ?.map((r) => `- ${r}`)
+          .join("\n")}`,
       ])
     })
   })
@@ -215,6 +229,39 @@ on two lines`
       const siwsMessage = new SiwsMessage({ ...validParams, azeroId: "thisisafake.azero" })
       const validAzeroId = await siwsMessage.verifyAzeroId()
       expect(validAzeroId).toEqual(false)
+    })
+  })
+
+  describe("verify", () => {
+    const keyring = new Keyring()
+    // DO NOT USE THIS MNEMONIC IN PRODUCTION
+    const testPair = keyring.addFromMnemonic(
+      "master style couple pulse viable fire mistake used unfold height oak romance"
+    )
+    it("should return true if signature matches signer and message", async () => {
+      const siwsMessage = new SiwsMessage({ ...validParams, address: testPair.address })
+      const messageString = siwsMessage.prepareMessage()
+
+      // mimic verification flow
+      const message = parseMessage(messageString)
+      const signature = testPair.sign(messageString)
+      const validated = await message.verify({
+        signature: u8aToHex(signature),
+      })
+      expect(validated.success).toEqual(true)
+    })
+
+    it("should return false if signature does not match signer and message", async () => {
+      const siwsMessage = new SiwsMessage({ ...validParams, address: testPair.address })
+      const messageString = siwsMessage.prepareMessage()
+
+      // mimic verification flow
+      const message = parseMessage(`${messageString}abcd`)
+      const signature = testPair.sign(messageString)
+      const validated = await message.verify({
+        signature: u8aToHex(signature),
+      })
+      expect(validated.success).toEqual(false)
     })
   })
 })

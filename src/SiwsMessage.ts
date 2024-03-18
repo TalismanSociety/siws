@@ -1,5 +1,12 @@
+import {
+  cryptoWaitReady,
+  decodeAddress,
+  encodeAddress,
+  signatureVerify,
+} from "@polkadot/util-crypto"
 import type { InjectedExtension } from "@polkadot/extension-inject/types"
 import { Address } from "./utils.js"
+import { parseMessage } from "./parseMessage.js"
 
 export const siwsVersions: string[] = ["1.0.0"]
 export type SiwsVersion = (typeof siwsVersions)[number]
@@ -40,13 +47,28 @@ export class SiwsMessage {
   requestId?: string
   /**List of information or references to information the user wishes to have resolved as part of the authentication by the relying party; express as RFC 3986 URIs */
   resources?: string[]
+  /**Only if the SiwsMessage class was created from message string */
+  _fromMessage?: string
 
   constructor(
-    param: Omit<
-      SiwsMessage,
-      "prepareJson" | "asJson" | "prepareMessage" | "sign" | "signJson" | "verifyAzeroId"
-    >
+    param:
+      | Omit<
+          SiwsMessage,
+          | "prepareJson"
+          | "asJson"
+          | "prepareMessage"
+          | "sign"
+          | "signJson"
+          | "verifyAzeroId"
+          | "verify"
+        >
+      | string
   ) {
+    if (typeof param === "string") {
+      this._fromMessage = param
+      param = parseMessage(param)
+    }
+
     this.domain = param.domain
     this.address = param.address
     this.azeroId = param.azeroId
@@ -99,6 +121,8 @@ export class SiwsMessage {
    * Prepares the message to be signed in human readable format.
    */
   prepareMessage(): string {
+    if (this._fromMessage) return this._fromMessage
+
     this.validateMessage()
 
     let message = `${this.domain} wants you to sign in with your ${
@@ -182,9 +206,10 @@ export class SiwsMessage {
   private validateMessage() {
     if (!this.domain || this.domain.length === 0) throw new Error("SIWS Error: domain is required")
 
+    // TODO: make sure this is either valid address or a valid ethereum address
     // invalid SS58 address
-    if (!Address.fromSs58(this.address))
-      throw new Error("SIWS Error: address is not a valid substrate address")
+    // if (!Address.fromSs58(this.address))
+    //   throw new Error("SIWS Error: address is not a valid substrate address")
 
     // uri is required for wallets validation and to help prevent phishing attacks
     if (!this.uri || this.uri.length === 0) throw new Error("SIWS Error: uri is required")
@@ -251,6 +276,23 @@ export class SiwsMessage {
       return !!parsedAddress && !!resolvedAddress && parsedAddress.isEqual(resolvedAddress)
     } catch (e) {
       return false
+    }
+  }
+
+  // TODO: add optional domain, nonce, time
+  /**
+   * Given a signature, verify that it was signed by the address encoded in SiwsMessage
+   */
+  async verify({ signature }: { signature: string }): Promise<{
+    success: boolean
+    data: SiwsMessage
+  }> {
+    await cryptoWaitReady()
+    const message = this._fromMessage ?? this.prepareMessage()
+    const verification = signatureVerify(message, signature, this.address)
+    return {
+      success: verification.isValid,
+      data: this,
     }
   }
 }
