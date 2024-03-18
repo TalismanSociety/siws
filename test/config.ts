@@ -13,7 +13,6 @@ export const validParams = {
   address: VALID_ADDRESS,
   statement: "This is a test statement",
   uri: "https://siws.xyz",
-  version: Siws.CURRENT_VERSION,
   azeroId: "siws.azero",
   nonce: "1234567890",
   chainId: "polkadot",
@@ -24,6 +23,6 @@ export const validParams = {
   resources: [
     "http://some-domain/path/to/resource",
     "https://some-other-domain/path/to/resource?withQuery=search&otherQuery=otherSearch",
-    "wss://frequency-rpc.dwellir.com"
-  ]
+    "wss://frequency-rpc.dwellir.com",
+  ],
 }

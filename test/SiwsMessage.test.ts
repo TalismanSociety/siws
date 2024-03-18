@@ -1,5 +1,5 @@
 import { Keyring } from "@polkadot/api"
-import { SiwsMessage } from "../src/SiwsMessage"
+import { Siws, SiwsMessage } from "../src/SiwsMessage"
 import { parseMessage } from "../src/parseMessage"
 import { VALID_ADDRESS, validParams } from "./config"
 import type { InjectedExtension } from "@polkadot/extension-inject/types"
@@ -131,7 +131,7 @@ on two lines`,
 
   describe("asJson", () => {
     it("should return the same params as json object", () => {
-      expect(validSiwsMessage.asJson).toEqual(validParams)
+      expect(validSiwsMessage.asJson).toEqual({ ...validParams, version: Siws.CURRENT_VERSION })
     })
   })
 
@@ -141,7 +141,11 @@ on two lines`,
       const parsedJson = JSON.parse(jsonString) // so we can compare it back to original params
 
       // issuedAt is generated, so we need to compare it separately
-      expect(parsedJson).toEqual({ ...validParams, issuedAt: parsedJson.issuedAt })
+      expect(parsedJson).toEqual({
+        ...validParams,
+        issuedAt: parsedJson.issuedAt,
+        version: Siws.CURRENT_VERSION,
+      })
     })
   })
 

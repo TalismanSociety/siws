@@ -52,7 +52,7 @@ export class SiwsMessage {
 
   constructor(
     param:
-      | Omit<
+      | (Omit<
           SiwsMessage,
           | "prepareJson"
           | "asJson"
@@ -61,7 +61,8 @@ export class SiwsMessage {
           | "signJson"
           | "verifyAzeroId"
           | "verify"
-        >
+          | "version"
+        > & { version?: string })
       | string
   ) {
     if (typeof param === "string") {
