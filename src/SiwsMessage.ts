@@ -1,10 +1,5 @@
-import {
-  cryptoWaitReady,
-  decodeAddress,
-  encodeAddress,
-  signatureVerify,
-} from "@polkadot/util-crypto"
-import type { InjectedExtension } from "@polkadot/extension-inject/types"
+import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
+import type { InjectedExtension, Injected } from "@polkadot/extension-inject/types"
 import { Address } from "./utils.js"
 import { parseMessage } from "./parseMessage.js"
 
@@ -77,7 +72,7 @@ export class SiwsMessage {
     this.uri = param.uri
     this.nonce = param.nonce
     this.chainId = param.chainId
-    this.chainName = param.chainName ?? "Substrate"
+    this.chainName = param.chainName ?? Address.fromSs58(param.address) ? "Substrate" : "Ethereum"
     this.expirationTime = param.expirationTime
     this.issuedAt = param.issuedAt
     this.notBefore = param.notBefore
@@ -170,7 +165,7 @@ export class SiwsMessage {
    * @param source You can get this from `web3FromSource(injectedAccount.meta.source)`
    * */
   async sign(
-    injectedExtension: InjectedExtension
+    injectedExtension: InjectedExtension | Injected
   ): Promise<{ signature: string; message: string }> {
     if (!injectedExtension.signer.signRaw)
       throw new Error("Wallet does not support signing message.")
@@ -190,7 +185,7 @@ export class SiwsMessage {
    * @param source You can get this from `web3FromSource(injectedAccount.meta.source)`
    * */
   async signJson(
-    injectedExtension: InjectedExtension
+    injectedExtension: InjectedExtension | Injected
   ): Promise<{ signature: string; message: string }> {
     if (!injectedExtension.signer.signRaw)
       throw new Error("Wallet does not support signing message.")
