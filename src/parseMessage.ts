@@ -83,7 +83,7 @@ export const parseMessage = (message: string): SiwsMessage => {
 
     // parse address
     address = headers[1]
-    if (!address || !Address.fromSs58(address)) throw new Error()
+    if (!address) throw new Error()
 
     // remove the brackets
     azeroId = headers[2]?.slice(1, -1)

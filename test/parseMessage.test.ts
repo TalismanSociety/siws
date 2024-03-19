@@ -30,6 +30,17 @@ describe("parseMessage", () => {
     expect(parsed.asJson).toStrictEqual(validSiwsMessage.asJson)
   })
 
+  it("should parse a valid message that contains ethereum address", () => {
+    const testEthereumAddress = "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67"
+
+    const parsed = parseMessage(
+      `https://your-app.com wants you to sign in with your Ethereum account:\n${testEthereumAddress}\n\nVerify account ownership\n\nURI: https://your-app.com\nVersion: 1.0.0\nNonce: 00000000-0000-0000-0000-000000000000\nIssued At: 2024-03-18T21:32:03.359Z`
+    )
+    const json = parsed.asJson
+    expect(json.address).toBe(testEthereumAddress)
+    expect(json.chainName).toBe("Ethereum")
+  })
+
   // TODO: allow ethereum address
   // it("should throw an error if address is invalid", () => {
   //   const invalidParams = { ...validParams, address: "invalid" }

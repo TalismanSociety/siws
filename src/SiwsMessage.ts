@@ -77,7 +77,7 @@ export class SiwsMessage {
     this.uri = param.uri
     this.nonce = param.nonce
     this.chainId = param.chainId
-    this.chainName = param.chainName
+    this.chainName = param.chainName ?? "Substrate"
     this.expirationTime = param.expirationTime
     this.issuedAt = param.issuedAt
     this.notBefore = param.notBefore
@@ -100,7 +100,8 @@ export class SiwsMessage {
       uri: this.uri,
       nonce: this.nonce,
       chainId: this.chainId,
-      issuedAt: this.issuedAt,
+      chainName: this.chainName,
+      issuedAt: this.issuedAt ?? new Date().getTime(),
       expirationTime: this.expirationTime,
       notBefore: this.notBefore,
       version: this.version,

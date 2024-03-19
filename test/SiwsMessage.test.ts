@@ -131,7 +131,12 @@ on two lines`,
 
   describe("asJson", () => {
     it("should return the same params as json object", () => {
-      expect(validSiwsMessage.asJson).toEqual({ ...validParams, version: Siws.CURRENT_VERSION })
+      expect(validSiwsMessage.asJson).toEqual({
+        ...validParams,
+        chainName: "Substrate",
+        issuedAt: validSiwsMessage.asJson.issuedAt,
+        version: Siws.CURRENT_VERSION,
+      })
     })
   })
 
@@ -143,6 +148,7 @@ on two lines`,
       // issuedAt is generated, so we need to compare it separately
       expect(parsedJson).toEqual({
         ...validParams,
+        chainName: "Substrate",
         issuedAt: parsedJson.issuedAt,
         version: Siws.CURRENT_VERSION,
       })
@@ -243,26 +249,30 @@ on two lines`,
       "master style couple pulse viable fire mistake used unfold height oak romance"
     )
     it("should return true if signature matches signer and message", async () => {
+      // frontend craft and prepare message string
       const siwsMessage = new SiwsMessage({ ...validParams, address: testPair.address })
       const messageString = siwsMessage.prepareMessage()
 
-      // mimic verification flow
-      const message = parseMessage(messageString)
+      // user sign message string
       const signature = testPair.sign(messageString)
-      const validated = await message.verify({
+
+      // backend craft SiwsMessage from string and verify it
+      const validated = await new SiwsMessage(messageString).verify({
         signature: u8aToHex(signature),
       })
       expect(validated.success).toEqual(true)
     })
 
     it("should return false if signature does not match signer and message", async () => {
+      // frontend craft and prepare message string
       const siwsMessage = new SiwsMessage({ ...validParams, address: testPair.address })
       const messageString = siwsMessage.prepareMessage()
 
-      // mimic verification flow
-      const message = parseMessage(`${messageString}abcd`)
+      // user sign message string
       const signature = testPair.sign(messageString)
-      const validated = await message.verify({
+
+      // backend craft SiwsMessage from string and verify it
+      const validated = await new SiwsMessage(`${messageString}asd`).verify({
         signature: u8aToHex(signature),
       })
       expect(validated.success).toEqual(false)
