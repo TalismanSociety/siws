@@ -33,7 +33,7 @@
     "@polkadot/extension-dapp": "^0.46.5"
   },
   "dependencies": {
-    "@azns/resolver-core": "^1.6.0",
+    "@azns/resolver-core": "^1.7.0",
     "@types/jest": "^29.5.8"
   },
   "directories": {
