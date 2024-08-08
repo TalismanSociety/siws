@@ -72,7 +72,7 @@ export class SiwsMessage {
     this.uri = param.uri
     this.nonce = param.nonce
     this.chainId = param.chainId
-    this.chainName = param.chainName ?? Address.fromSs58(param.address) ? "Substrate" : "Ethereum"
+    this.chainName = param.chainName ?? (Address.fromSs58(param.address) ? "Substrate" : "Ethereum")
     this.expirationTime = param.expirationTime
     this.issuedAt = param.issuedAt
     this.notBefore = param.notBefore
