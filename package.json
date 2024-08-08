@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "jest --verbose --coverage"
+    "test": "jest --verbose --coverage",
+    "format": "prettier --write ."
   },
   "author": "chrisling-dev",
   "license": "MIT",

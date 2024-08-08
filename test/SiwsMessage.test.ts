@@ -57,14 +57,14 @@ describe("SiwsMessage", () => {
     it("should throw error if issuedAt is invalid", () => {
       const invalidParams = { ...validParams, issuedAt: "invalidTimestamp" as any }
       expect(() => new SiwsMessage(invalidParams)).toThrow(
-        "SIWS Error: issuedAt is not a valid date"
+        "SIWS Error: issuedAt is not a valid date",
       )
     })
 
     it("should throw error if expirationTime is invalid", () => {
       const invalidParams = { ...validParams, expirationTime: "invalidTimestamp" as any }
       expect(() => new SiwsMessage(invalidParams)).toThrow(
-        "SIWS Error: expirationTime is not a valid date"
+        "SIWS Error: expirationTime is not a valid date",
       )
     })
 
@@ -75,7 +75,7 @@ describe("SiwsMessage", () => {
         issuedAt: new Date().getTime() + 1000,
       }
       expect(() => new SiwsMessage(invalidParams)).toThrow(
-        "SIWS Error: expirationTime must be greater than issuedAt"
+        "SIWS Error: expirationTime must be greater than issuedAt",
       )
     })
 
@@ -90,7 +90,7 @@ describe("SiwsMessage", () => {
     it("should throw error if notBefore is invalid", () => {
       const invalidParams = { ...validParams, notBefore: "intvalidTimestamp" as any }
       expect(() => new SiwsMessage(invalidParams)).toThrow(
-        "SIWS Error: notBefore is not a valid date"
+        "SIWS Error: notBefore is not a valid date",
       )
     })
 
@@ -103,7 +103,7 @@ describe("SiwsMessage", () => {
         notBefore: now + 1000,
       }
       expect(() => new SiwsMessage(invalidParams)).toThrow(
-        "SIWS Error: expirationTime must be greater than notBefore"
+        "SIWS Error: expirationTime must be greater than notBefore",
       )
     })
 
@@ -114,7 +114,7 @@ describe("SiwsMessage", () => {
 on two lines`,
       }
       expect(() => new SiwsMessage(invalidParams)).toThrow(
-        "SIWS Error: requestId must not contain newlines"
+        "SIWS Error: requestId must not contain newlines",
       )
     })
 
@@ -124,7 +124,7 @@ on two lines`,
         resources: ["invalid#Protocol://some-host:80/path/to/resource"],
       }
       expect(() => new SiwsMessage(invalidParams)).toThrow(
-        "SIWS Error: resources must be valid URLs"
+        "SIWS Error: resources must be valid URLs",
       )
     })
   })
@@ -166,11 +166,11 @@ on two lines`,
         `URI: ${validParams.uri}\nVersion: 1.0.0\nChain ID: ${validParams.chainId}\nNonce: ${
           validParams.nonce
         }\nIssued At: ${new Date(message.issuedAt ?? 0).toISOString()}\nExpiration Time: ${new Date(
-          validParams.expirationTime ?? 0
+          validParams.expirationTime ?? 0,
         ).toISOString()}\nNot Before: ${new Date(
-          message.notBefore ?? 0
+          message.notBefore ?? 0,
         ).toISOString()}\nRequest ID: ${message.requestId}\nResources:\n${message.resources
-          ?.map((r) => `- ${r}`)
+          ?.map(r => `- ${r}`)
           .join("\n")}`,
       ])
     })
@@ -182,7 +182,7 @@ on two lines`,
       await expect(
         siwsMessage.sign({
           signer: {},
-        } as unknown as InjectedExtension)
+        } as unknown as InjectedExtension),
       ).rejects.toThrow("Wallet does not support signing message.")
     })
 
@@ -190,7 +190,7 @@ on two lines`,
       const siwsMessage = new SiwsMessage(validParams)
       const preparedMessage = siwsMessage.prepareMessage()
       const { signature } = await siwsMessage.sign(
-        mockedInjectedExtension as unknown as InjectedExtension
+        mockedInjectedExtension as unknown as InjectedExtension,
       )
       expect(mockedInjectedExtension.signer.signRaw).toHaveBeenCalledWith({
         address: validParams.address,
@@ -208,7 +208,7 @@ on two lines`,
       await expect(
         siwsMessage.signJson({
           signer: {},
-        } as unknown as InjectedExtension)
+        } as unknown as InjectedExtension),
       ).rejects.toThrow("Wallet does not support signing message.")
     })
 
@@ -216,7 +216,7 @@ on two lines`,
       const siwsMessage = new SiwsMessage(validParams)
       const jsonMessage = siwsMessage.prepareJson()
       const { signature } = await siwsMessage.signJson(
-        mockedInjectedExtension as unknown as InjectedExtension
+        mockedInjectedExtension as unknown as InjectedExtension,
       )
       expect(mockedInjectedExtension.signer.signRaw).toHaveBeenCalledWith({
         address: validParams.address,
@@ -246,7 +246,7 @@ on two lines`,
     const keyring = new Keyring()
     // DO NOT USE THIS MNEMONIC IN PRODUCTION
     const testPair = keyring.addFromMnemonic(
-      "master style couple pulse viable fire mistake used unfold height oak romance"
+      "master style couple pulse viable fire mistake used unfold height oak romance",
     )
     it("should return true if signature matches signer and message", async () => {
       // frontend craft and prepare message string

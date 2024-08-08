@@ -95,7 +95,7 @@ export const parseMessage = (message: string): SiwsMessage => {
 
     // parse uri, nonce, chain id, issued at, expiration time
     const bodyLines = body.split("\n")
-    bodyLines.forEach((line) => {
+    bodyLines.forEach(line => {
       const [key, value] = line.split(": ")
       if (key === "URI") uri = value
       if (key === "Version") version = value

@@ -10,7 +10,7 @@ describe("Address", () => {
       acc[chain] = (Address.fromSs58(address) as Address).toPubKey()
       return acc
     },
-    {} as Record<string, string>
+    {} as Record<string, string>,
   )
 
   describe("construction", () => {
@@ -40,7 +40,7 @@ describe("Address", () => {
 
   describe("methods", () => {
     const [genericAddress, polkadotAddress, kusamaAddress] = Object.values(ALICE).map(
-      (address) => Address.fromSs58(address) as Address
+      address => Address.fromSs58(address) as Address,
     )
     describe("isEqual", () => {
       // make sure we can check equality between addresses across different chains
