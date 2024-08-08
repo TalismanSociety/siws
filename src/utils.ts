@@ -76,6 +76,7 @@ export class Address {
 
   /* to generic address if chain is not provided */
   toSs58(ss58Prefix?: number): string {
+    if (this.bytes.length === 20) return u8aToHex(this.bytes)
     return encodeAddress(this.bytes, ss58Prefix)
   }
 
