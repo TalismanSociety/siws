@@ -1,13 +1,13 @@
 import { parseMessage } from "../src/parseMessage"
 import { SiwsMessage } from "../src/SiwsMessage"
-import { VALID_ADDRESS, validParams } from "./config"
+import { EVM_ADDRESS, VALID_ADDRESS, validParams } from "./config"
 
 const validSiwsMessage = new SiwsMessage(validParams)
 
 const invalidMessages = {
   "empty string": "",
   "random string": "random string",
-  number: 1234,
+  "number": 1234,
   "missing domain": `wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n\nURI: https://siws.xyz\nNonce: 1234567890`,
   "missing chainName": `siws.xyz wants you to sign in with your account:\n${VALID_ADDRESS}\n\nURI: https://siws.xyz\nNonce: 1234567890`,
   "missing address": `siws.xyz wants you to sign in with your Substrate account:\n\nURI: https://siws.xyz\nNonce: 1234567890`,
@@ -31,13 +31,11 @@ describe("parseMessage", () => {
   })
 
   it("should parse a valid message that contains ethereum address", () => {
-    const testEthereumAddress = "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67"
-
     const parsed = parseMessage(
-      `https://your-app.com wants you to sign in with your Ethereum account:\n${testEthereumAddress}\n\nVerify account ownership\n\nURI: https://your-app.com\nVersion: 1.0.0\nNonce: 00000000-0000-0000-0000-000000000000\nIssued At: 2024-03-18T21:32:03.359Z`
+      `https://your-app.com wants you to sign in with your Ethereum account:\n${EVM_ADDRESS}\n\nVerify account ownership\n\nURI: https://your-app.com\nVersion: 1.0.0\nNonce: 00000000-0000-0000-0000-000000000000\nIssued At: 2024-03-18T21:32:03.359Z`,
     )
     const json = parsed.asJson
-    expect(json.address).toBe(testEthereumAddress)
+    expect(json.address).toBe(EVM_ADDRESS)
     expect(json.chainName).toBe("Ethereum")
   })
 
@@ -52,7 +50,7 @@ describe("parseMessage", () => {
   Object.entries(invalidMessages).forEach(([key, invalidMessage]) => {
     it(`should throw error when message is ${key}`, () => {
       expect(() => parseMessage(invalidMessage.toString())).toThrow(
-        "SIWS Error: Invalid SIWS message."
+        "SIWS Error: Invalid SIWS message.",
       )
     })
   })

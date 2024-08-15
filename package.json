@@ -1,6 +1,6 @@
 {
   "name": "@talismn/siws",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "Sign-In with Substrate",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "jest --verbose --coverage"
+    "test": "jest --verbose --coverage",
+    "format": "prettier --write ."
   },
   "author": "chrisling-dev",
   "license": "MIT",
@@ -34,7 +35,8 @@
   },
   "dependencies": {
     "@azns/resolver-core": "^1.6.0",
-    "@types/jest": "^29.5.8"
+    "@types/jest": "^29.5.8",
+    "ethers": "^5.7.2"
   },
   "directories": {
     "test": "test"

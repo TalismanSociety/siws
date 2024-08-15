@@ -58,7 +58,7 @@ export class SiwsMessage {
           | "verify"
           | "version"
         > & { version?: string })
-      | string
+      | string,
   ) {
     if (typeof param === "string") {
       this._fromMessage = param
@@ -72,7 +72,9 @@ export class SiwsMessage {
     this.uri = param.uri
     this.nonce = param.nonce
     this.chainId = param.chainId
-    this.chainName = param.chainName ?? Address.fromSs58(param.address) ? "Substrate" : "Ethereum"
+    this.chainName =
+      param.chainName ??
+      ((Address.fromSs58(param.address) || {}).isEthereum ? "Ethereum" : "Substrate")
     this.expirationTime = param.expirationTime
     this.issuedAt = param.issuedAt
     this.notBefore = param.notBefore
@@ -152,7 +154,7 @@ export class SiwsMessage {
 
     if (this.resources?.length) {
       body.push(`Resources:`)
-      this.resources.forEach((resource) => body.push(`- ${resource}`))
+      this.resources.forEach(resource => body.push(`- ${resource}`))
     }
 
     message += body.join("\n")
@@ -165,7 +167,7 @@ export class SiwsMessage {
    * @param source You can get this from `web3FromSource(injectedAccount.meta.source)`
    * */
   async sign(
-    injectedExtension: InjectedExtension | Injected
+    injectedExtension: InjectedExtension | Injected,
   ): Promise<{ signature: string; message: string }> {
     if (!injectedExtension.signer.signRaw)
       throw new Error("Wallet does not support signing message.")
@@ -185,7 +187,7 @@ export class SiwsMessage {
    * @param source You can get this from `web3FromSource(injectedAccount.meta.source)`
    * */
   async signJson(
-    injectedExtension: InjectedExtension | Injected
+    injectedExtension: InjectedExtension | Injected,
   ): Promise<{ signature: string; message: string }> {
     if (!injectedExtension.signer.signRaw)
       throw new Error("Wallet does not support signing message.")
@@ -252,7 +254,7 @@ export class SiwsMessage {
       throw new Error("SIWS Error: requestId must not contain newlines")
 
     if (this.resources?.length) {
-      this.resources.forEach((resource) => {
+      this.resources.forEach(resource => {
         if (!URL.canParse(resource))
           throw new Error(`SIWS Error: resources must be valid URLs: ${resource}`)
       })
