@@ -30,8 +30,8 @@
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
-    "@polkadot/api": "^10.10.1",
-    "@polkadot/extension-dapp": "^0.46.5"
+    "@polkadot/api": "*",
+    "@polkadot/extension-dapp": "*"
   },
   "dependencies": {
     "@azns/resolver-core": "^1.6.0",
