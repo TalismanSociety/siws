@@ -30,7 +30,7 @@ jobs:
         run: npm audit signatures
       - name: Tests
         run: npm test
-      - name: Dry Run Publish
+      - name: Publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
