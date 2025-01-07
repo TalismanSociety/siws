@@ -6,6 +6,7 @@ import {
 } from "@polkadot/util-crypto"
 import { hexToU8a, isHex, u8aToHex } from "@polkadot/util"
 import { parseMessage } from "./parseMessage.js"
+import { utils } from "ethers"
 
 export const isAzeroId = (azeroId: string) => {
   const lowerCased = azeroId.toLowerCase()
@@ -37,8 +38,18 @@ export class Address {
   readonly bytes: Uint8Array
 
   constructor(bytes: Uint8Array) {
-    if (bytes.length !== 32) throw new Error("Address must be 32 bytes!")
-    this.bytes = bytes
+    if (bytes.length === 32 || bytes.length === 20) {
+      this.bytes = bytes
+      if (bytes.length === 20 && !utils.isAddress(u8aToHex(bytes))) {
+        throw new Error("Invalid Ethereum address!")
+      }
+      return
+    }
+    throw new Error("Address must be 32/20 bytes!")
+  }
+
+  get isEthereum(): boolean {
+    return this.bytes.length === 20
   }
 
   static fromSs58(addressCandidate: string): Address | false {
@@ -65,6 +76,7 @@ export class Address {
 
   /* to generic address if chain is not provided */
   toSs58(ss58Prefix?: number): string {
+    if (this.bytes.length === 20) return u8aToHex(this.bytes)
     return encodeAddress(this.bytes, ss58Prefix)
   }
 
