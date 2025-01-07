@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  release:
+  dryRun:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,7 +15,7 @@ jobs:
       - run: npm run build
       - run: npm audit signatures
       - run: npm test
-      - name: Release
+      - name: Dry Run Publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
