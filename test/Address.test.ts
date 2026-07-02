@@ -1,5 +1,8 @@
+import { hexToU8a } from "../src/crypto/bytes"
+import { decodeSs58Address, encodeSs58Address } from "../src/crypto/ss58"
 import { Address } from "../src/utils"
 import { VALID_ADDRESS, VITALIK_ADDRESS, ALICE, EVM_ADDRESS } from "./config"
+import { SS58_VECTOR } from "./vectors"
 
 const validAddress = Address.fromSs58(VALID_ADDRESS) as Address
 const vitalikAddress = Address.fromSs58(VITALIK_ADDRESS) as Address
@@ -91,5 +94,35 @@ describe("Address", () => {
         expect(genericAddress.toPubKey()).toBe(pubkeysByChain.generic)
       })
     })
+  })
+})
+
+// vectors generated with @polkadot/util-crypto encodeAddress, see test/vectors.ts
+describe("ss58 codec", () => {
+  const pubKey = hexToU8a(SS58_VECTOR.publicKey)
+
+  Object.entries(SS58_VECTOR.encodings).forEach(([prefix, address]) => {
+    it(`should encode the same address as polkadot-js for prefix ${prefix}`, () => {
+      expect(encodeSs58Address(pubKey, Number(prefix))).toBe(address)
+    })
+
+    it(`should decode a prefix ${prefix} address back to the public key`, () => {
+      expect(decodeSs58Address(address)).toEqual(pubKey)
+    })
+  })
+
+  it("should throw on invalid checksum", () => {
+    // last characters tampered
+    expect(() => decodeSs58Address(SS58_VECTOR.encodings[42].slice(0, -2) + "11")).toThrow()
+  })
+
+  it("should throw on reserved prefixes", () => {
+    expect(() => encodeSs58Address(pubKey, 46)).toThrow()
+    expect(() => encodeSs58Address(pubKey, 47)).toThrow()
+    expect(() => encodeSs58Address(pubKey, 16384)).toThrow()
+  })
+
+  it("should throw on invalid public key length", () => {
+    expect(() => encodeSs58Address(new Uint8Array(20))).toThrow()
   })
 })

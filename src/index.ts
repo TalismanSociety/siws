@@ -1,5 +1,5 @@
-import "@polkadot/api-augment/polkadot"
-
 export * from "./SiwsMessage.js"
 export * from "./parseMessage.js"
 export * from "./utils.js"
+export * from "./types.js"
+export * from "./crypto/verify.js"

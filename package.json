@@ -31,16 +31,14 @@
     "semantic-release": "^24.2.1",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2",
-    "husky": "^8.0.0"
-  },
-  "peerDependencies": {
-    "@polkadot/api": "*",
-    "@polkadot/extension-dapp": "*"
+    "husky": "^8.0.0",
+    "@types/jest": "^29.5.8"
   },
   "dependencies": {
-    "@azns/resolver-core": "^1.7.0",
-    "@types/jest": "^29.5.8",
-    "ethers": "^5.7.2"
+    "@noble/curves": "^2.2.0",
+    "@noble/hashes": "^2.2.0",
+    "@scure/base": "^2.2.0",
+    "@scure/sr25519": "^2.2.0"
   },
   "directories": {
     "test": "test"

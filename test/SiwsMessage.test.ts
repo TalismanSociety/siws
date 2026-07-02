@@ -1,19 +1,19 @@
-import { Keyring } from "@polkadot/api"
+import { ed25519 } from "@noble/curves/ed25519.js"
+import { secp256k1 } from "@noble/curves/secp256k1.js"
+import { blake2b } from "@noble/hashes/blake2.js"
+import { concatBytes, utf8ToBytes } from "@noble/hashes/utils.js"
+import * as sr25519 from "@scure/sr25519"
 import { Siws, SiwsMessage } from "../src/SiwsMessage"
 import { parseMessage } from "../src/parseMessage"
+import { u8aToHex } from "../src/crypto/bytes"
+import { encodeSs58Address } from "../src/crypto/ss58"
+import { verifySIWS } from "../src/utils"
+import type { SiwsSigner } from "../src/types"
 import { VALID_ADDRESS, validParams } from "./config"
-import type { InjectedExtension } from "@polkadot/extension-inject/types"
-import { u8aToHex } from "@polkadot/util"
+import { ED25519_VECTOR, SR25519_VECTOR, ECDSA_VECTOR, SchemeVector } from "./vectors"
 
-jest.mock("@azns/resolver-core", () => ({
-  resolveDomainToAddress: jest.fn((a0id: string) => {
-    const validAzeroIDs = {
-      "siws.azero": "5DFMVCaWNPcSdPVmK7d6g81ZV58vw5jkKbQk8vR4FSxyhJBD",
-    }
-
-    return { address: validAzeroIDs[a0id] }
-  }),
-}))
+const wrapBytes = (message: string) =>
+  concatBytes(utf8ToBytes("<Bytes>"), utf8ToBytes(message), utf8ToBytes("</Bytes>"))
 
 const validSiwsMessage = new SiwsMessage(validParams)
 const mockedInjectedExtension = {
@@ -182,16 +182,14 @@ on two lines`,
       await expect(
         siwsMessage.sign({
           signer: {},
-        } as unknown as InjectedExtension),
+        } as SiwsSigner),
       ).rejects.toThrow("Wallet does not support signing message.")
     })
 
     it("should call signRaw with the right parameters", async () => {
       const siwsMessage = new SiwsMessage(validParams)
       const preparedMessage = siwsMessage.prepareMessage()
-      const { signature } = await siwsMessage.sign(
-        mockedInjectedExtension as unknown as InjectedExtension,
-      )
+      const { signature } = await siwsMessage.sign(mockedInjectedExtension as unknown as SiwsSigner)
       expect(mockedInjectedExtension.signer.signRaw).toHaveBeenCalledWith({
         address: validParams.address,
         data: preparedMessage,
@@ -208,7 +206,7 @@ on two lines`,
       await expect(
         siwsMessage.signJson({
           signer: {},
-        } as unknown as InjectedExtension),
+        } as SiwsSigner),
       ).rejects.toThrow("Wallet does not support signing message.")
     })
 
@@ -216,7 +214,7 @@ on two lines`,
       const siwsMessage = new SiwsMessage(validParams)
       const jsonMessage = siwsMessage.prepareJson()
       const { signature } = await siwsMessage.signJson(
-        mockedInjectedExtension as unknown as InjectedExtension,
+        mockedInjectedExtension as unknown as SiwsSigner,
       )
       expect(mockedInjectedExtension.signer.signRaw).toHaveBeenCalledWith({
         address: validParams.address,
@@ -229,53 +227,179 @@ on two lines`,
   })
 
   describe("verifyAzeroId", () => {
-    it("should return true if azero id is valid", async () => {
+    it("should resolve true (deprecated no-op)", async () => {
       const siwsMessage = new SiwsMessage(validParams)
-      const validAzeroId = await siwsMessage.verifyAzeroId()
-      expect(validAzeroId).toEqual(true)
+      await expect(siwsMessage.verifyAzeroId()).resolves.toEqual(true)
     })
 
-    it("should return false if azero id is invalid", async () => {
+    it("should resolve true even for unresolvable azero ids", async () => {
       const siwsMessage = new SiwsMessage({ ...validParams, azeroId: "thisisafake.azero" })
-      const validAzeroId = await siwsMessage.verifyAzeroId()
-      expect(validAzeroId).toEqual(false)
+      await expect(siwsMessage.verifyAzeroId()).resolves.toEqual(true)
     })
   })
 
   describe("verify", () => {
-    const keyring = new Keyring()
-    // DO NOT USE THIS MNEMONIC IN PRODUCTION
-    const testPair = keyring.addFromMnemonic(
-      "master style couple pulse viable fire mistake used unfold height oak romance",
-    )
-    it("should return true if signature matches signer and message", async () => {
-      // frontend craft and prepare message string
-      const siwsMessage = new SiwsMessage({ ...validParams, address: testPair.address })
-      const messageString = siwsMessage.prepareMessage()
+    describe("ed25519", () => {
+      const seed = new Uint8Array(32).fill(7)
+      const publicKey = ed25519.getPublicKey(seed)
+      const address = encodeSs58Address(publicKey)
 
-      // user sign message string
-      const signature = testPair.sign(messageString)
+      it("should return true if signature matches signer and message", async () => {
+        const messageString = new SiwsMessage({ ...validParams, address }).prepareMessage()
+        const signature = ed25519.sign(utf8ToBytes(messageString), seed)
 
-      // backend craft SiwsMessage from string and verify it
-      const validated = await new SiwsMessage(messageString).verify({
-        signature: u8aToHex(signature),
+        const validated = await new SiwsMessage(messageString).verify({
+          signature: u8aToHex(signature),
+        })
+        expect(validated.success).toEqual(true)
       })
-      expect(validated.success).toEqual(true)
+
+      it("should return false if signature does not match signer and message", async () => {
+        const messageString = new SiwsMessage({ ...validParams, address }).prepareMessage()
+        const signature = ed25519.sign(utf8ToBytes(messageString), seed)
+
+        const validated = await new SiwsMessage(`${messageString}asd`).verify({
+          signature: u8aToHex(signature),
+        })
+        expect(validated.success).toEqual(false)
+      })
+
+      it("should return false if address is not the signer", async () => {
+        const messageString = new SiwsMessage({
+          ...validParams,
+          address: VALID_ADDRESS,
+        }).prepareMessage()
+        const signature = ed25519.sign(utf8ToBytes(messageString), seed)
+
+        const validated = await new SiwsMessage(messageString).verify({
+          signature: u8aToHex(signature),
+        })
+        expect(validated.success).toEqual(false)
+      })
     })
 
-    it("should return false if signature does not match signer and message", async () => {
-      // frontend craft and prepare message string
-      const siwsMessage = new SiwsMessage({ ...validParams, address: testPair.address })
-      const messageString = siwsMessage.prepareMessage()
+    describe("sr25519", () => {
+      const secret = sr25519.secretFromSeed(new Uint8Array(32).fill(8))
+      const publicKey = sr25519.getPublicKey(secret)
+      const address = encodeSs58Address(publicKey)
 
-      // user sign message string
-      const signature = testPair.sign(messageString)
+      it("should return true if signature matches signer and message", async () => {
+        const messageString = new SiwsMessage({ ...validParams, address }).prepareMessage()
+        const signature = sr25519.sign(secret, utf8ToBytes(messageString))
 
-      // backend craft SiwsMessage from string and verify it
-      const validated = await new SiwsMessage(`${messageString}asd`).verify({
-        signature: u8aToHex(signature),
+        const validated = await new SiwsMessage(messageString).verify({
+          signature: u8aToHex(signature),
+        })
+        expect(validated.success).toEqual(true)
       })
-      expect(validated.success).toEqual(false)
+
+      it("should return true if message was signed wrapped in <Bytes> (extension signRaw)", async () => {
+        const messageString = new SiwsMessage({ ...validParams, address }).prepareMessage()
+        const signature = sr25519.sign(secret, wrapBytes(messageString))
+
+        const validated = await new SiwsMessage(messageString).verify({
+          signature: u8aToHex(signature),
+        })
+        expect(validated.success).toEqual(true)
+      })
+
+      it("should return false if signature does not match signer and message", async () => {
+        const messageString = new SiwsMessage({ ...validParams, address }).prepareMessage()
+        const signature = sr25519.sign(secret, utf8ToBytes(messageString))
+
+        const validated = await new SiwsMessage(`${messageString}asd`).verify({
+          signature: u8aToHex(signature),
+        })
+        expect(validated.success).toEqual(false)
+      })
+    })
+
+    describe("ecdsa", () => {
+      const secret = new Uint8Array(32).fill(9)
+      const publicKey = secp256k1.getPublicKey(secret) // compressed, 33 bytes
+      const address = encodeSs58Address(blake2b(publicKey, { dkLen: 32 }))
+
+      const signEcdsa = (message: string) => {
+        const digest = blake2b(utf8ToBytes(message), { dkLen: 32 })
+        // noble "recovered" format is v || r || s, substrate expects r || s || v
+        const recovered = secp256k1.sign(digest, secret, { prehash: false, format: "recovered" })
+        return concatBytes(recovered.subarray(1), recovered.subarray(0, 1))
+      }
+
+      it("should return true if signature matches signer and message", async () => {
+        const messageString = new SiwsMessage({ ...validParams, address }).prepareMessage()
+
+        const validated = await new SiwsMessage(messageString).verify({
+          signature: u8aToHex(signEcdsa(messageString)),
+        })
+        expect(validated.success).toEqual(true)
+      })
+
+      it("should return false if signature does not match signer and message", async () => {
+        const messageString = new SiwsMessage({ ...validParams, address }).prepareMessage()
+
+        const validated = await new SiwsMessage(`${messageString}asd`).verify({
+          signature: u8aToHex(signEcdsa(messageString)),
+        })
+        expect(validated.success).toEqual(false)
+      })
+    })
+  })
+
+  // signatures generated with the real @polkadot/keyring stack, see test/vectors.ts
+  describe("polkadot-js cross-compatibility", () => {
+    describe.each<[string, SchemeVector]>([
+      ["ed25519", ED25519_VECTOR],
+      ["sr25519", SR25519_VECTOR],
+      ["ecdsa", ECDSA_VECTOR],
+    ])("%s", (_type, vector) => {
+      it("should verify a raw signature", async () => {
+        const validated = await new SiwsMessage(vector.message).verify({
+          signature: vector.sigRaw,
+        })
+        expect(validated.success).toEqual(true)
+      })
+
+      it("should verify a signature over the <Bytes>-wrapped message (extension signRaw)", async () => {
+        const validated = await new SiwsMessage(vector.message).verify({
+          signature: vector.sigWrapped,
+        })
+        expect(validated.success).toEqual(true)
+      })
+
+      it("should verify a type-prefixed signature over the <Bytes>-wrapped message", async () => {
+        const validated = await new SiwsMessage(vector.message).verify({
+          signature: vector.sigWrappedWithType,
+        })
+        expect(validated.success).toEqual(true)
+      })
+
+      it("should not verify a signature from another pair", async () => {
+        const otherSignature =
+          vector === ED25519_VECTOR ? SR25519_VECTOR.sigRaw : ED25519_VECTOR.sigRaw
+        const validated = await new SiwsMessage(vector.message).verify({
+          signature: otherSignature,
+        })
+        expect(validated.success).toEqual(false)
+      })
+    })
+
+    describe("verifySIWS", () => {
+      it("should return the parsed message when the signature is valid", async () => {
+        const siwsMessage = await verifySIWS(
+          SR25519_VECTOR.message,
+          SR25519_VECTOR.sigWrapped,
+          SR25519_VECTOR.address,
+        )
+        expect(siwsMessage.address).toEqual(SR25519_VECTOR.address)
+        expect(siwsMessage.azeroId).toEqual("siws.azero")
+      })
+
+      it("should throw when the signature is invalid", async () => {
+        await expect(
+          verifySIWS(SR25519_VECTOR.message, ED25519_VECTOR.sigRaw, SR25519_VECTOR.address),
+        ).rejects.toThrow("SIWS Error: Invalid signature.")
+      })
     })
   })
 })

@@ -1,5 +1,5 @@
-import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
-import type { InjectedExtension, Injected } from "@polkadot/extension-inject/types"
+import { verifySignature } from "./crypto/verify.js"
+import type { SiwsSigner } from "./types.js"
 import { Address } from "./utils.js"
 import { parseMessage } from "./parseMessage.js"
 
@@ -163,12 +163,10 @@ export class SiwsMessage {
   }
 
   /**
-   * Utility function that wraps @polkadotjs api.
-   * @param source You can get this from `web3FromSource(injectedAccount.meta.source)`
+   * Signs the message in human readable format with any wallet exposing `signer.signRaw`
+   * (e.g. the result of `web3FromSource(injectedAccount.meta.source)`).
    * */
-  async sign(
-    injectedExtension: InjectedExtension | Injected,
-  ): Promise<{ signature: string; message: string }> {
+  async sign(injectedExtension: SiwsSigner): Promise<{ signature: string; message: string }> {
     if (!injectedExtension.signer.signRaw)
       throw new Error("Wallet does not support signing message.")
 
@@ -183,12 +181,10 @@ export class SiwsMessage {
   }
 
   /**
-   * Utility function that wraps @polkadotjs api.
-   * @param source You can get this from `web3FromSource(injectedAccount.meta.source)`
+   * Signs the message in stringified JSON format with any wallet exposing `signer.signRaw`
+   * (e.g. the result of `web3FromSource(injectedAccount.meta.source)`).
    * */
-  async signJson(
-    injectedExtension: InjectedExtension | Injected,
-  ): Promise<{ signature: string; message: string }> {
+  async signJson(injectedExtension: SiwsSigner): Promise<{ signature: string; message: string }> {
     if (!injectedExtension.signer.signRaw)
       throw new Error("Wallet does not support signing message.")
 
@@ -261,21 +257,12 @@ export class SiwsMessage {
     }
   }
 
-  async verifyAzeroId() {
-    if (!this.azeroId) return true
-    try {
-      const { resolveDomainToAddress } = await import("@azns/resolver-core")
-      const { address } = await resolveDomainToAddress(this.azeroId, {
-        chainId: this.azeroId.toLowerCase().endsWith("tzero") ? "alephzero-testnet" : "alephzero",
-      })
-
-      if (!address) return false
-      const parsedAddress = Address.fromSs58(this.address)
-      const resolvedAddress = Address.fromSs58(address)
-      return !!parsedAddress && !!resolvedAddress && parsedAddress.isEqual(resolvedAddress)
-    } catch (e) {
-      return false
-    }
+  /**
+   * @deprecated Azero ID resolution has been removed, this always resolves to `true`.
+   * The `azeroId` field is still parsed and rendered for message compatibility, but is no longer verified.
+   */
+  async verifyAzeroId(): Promise<boolean> {
+    return true
   }
 
   // TODO: add optional domain, nonce, time
@@ -286,9 +273,8 @@ export class SiwsMessage {
     success: boolean
     data: SiwsMessage
   }> {
-    await cryptoWaitReady()
     const message = this._fromMessage ?? this.prepareMessage()
-    const verification = signatureVerify(message, signature, this.address)
+    const verification = verifySignature(message, signature, this.address)
     return {
       success: verification.isValid,
       data: this,

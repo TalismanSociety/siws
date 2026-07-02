@@ -33,6 +33,7 @@ When building Signet, an enterprise tool for companies to manage their on-chain 
 - Utility `Address` to help with dealing with address string
 - Utility `verifySIWS` to help verify that a signature is valid
 - Full Typescript support
+- Framework agnostic: no peer dependencies, works with any wallet exposing a `signer.signRaw` method
 
 ## Installation
 
@@ -46,6 +47,7 @@ $ npm install @talismn/siws
 
 ```typescript
 // 1. import necessary modules
+// `web3FromSource` is optional: any object exposing a `signer.signRaw` method works
 import { web3FromSource } from "@polkadot/extension-dapp"
 import { SiwsMessage } from "@talismn/siws"
 
@@ -82,6 +84,10 @@ const handleSignInRequest = ({ signature, message, address }) => {
   // ... user has proven ownership of address and hence authenticated!
 }
 ```
+
+## Deprecations
+
+- **Azero ID resolution**: the `azeroId` field is still parsed and rendered for message compatibility, but is no longer resolved on-chain. `SiwsMessage.verifyAzeroId()` is deprecated and always resolves to `true`.
 
 ## Documentation
 
