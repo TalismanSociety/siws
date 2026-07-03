@@ -24,16 +24,7 @@ export default defineConfig({
             // Each item here is one entry in the navigation menu.
             { label: "Overview", link: "/getstarted/overview/" },
             { label: "Installation", link: "/getstarted/installation/" },
-            {
-              label: "Quickstart Guide",
-              items: [
-                { label: "Pre-requisites", link: "/getstarted/guide/prerequisites/" },
-                { label: "Connect Wallet", link: "/getstarted/guide/connect/" },
-                { label: "Sign In", link: "/getstarted/guide/signin/" },
-                { label: "The Backend", link: "/getstarted/guide/backend/" },
-                { label: "Access", link: "/getstarted/guide/access/" },
-              ],
-            },
+            { label: "Quickstart", link: "/getstarted/quickstart/" },
           ],
         },
         {
