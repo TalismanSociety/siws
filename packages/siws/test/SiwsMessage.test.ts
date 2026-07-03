@@ -10,7 +10,7 @@ import { encodeSs58Address } from "../src/crypto/ss58"
 import { verifySIWS } from "../src/utils"
 import type { SiwsSigner } from "../src/types"
 import { VALID_ADDRESS, validParams } from "./config"
-import { ED25519_VECTOR, SR25519_VECTOR, ECDSA_VECTOR, SchemeVector } from "./vectors"
+import { ED25519_VECTOR, SR25519_VECTOR, ECDSA_VECTOR, type SchemeVector } from "./vectors"
 
 const wrapBytes = (message: string) =>
   concatBytes(utf8ToBytes("<Bytes>"), utf8ToBytes(message), utf8ToBytes("</Bytes>"))
@@ -71,8 +71,8 @@ describe("SiwsMessage", () => {
     it("should throw error if expirationTime is before issuedAt", () => {
       const invalidParams = {
         ...validParams,
-        expirationTime: new Date().getTime(),
-        issuedAt: new Date().getTime() + 1000,
+        expirationTime: Date.now(),
+        issuedAt: Date.now() + 1000,
       }
       expect(() => new SiwsMessage(invalidParams)).toThrow(
         "SIWS Error: expirationTime must be greater than issuedAt",
@@ -82,7 +82,7 @@ describe("SiwsMessage", () => {
     it("should throw error when message has expired", () => {
       const { notBefore, ...invalidParams } = {
         ...validParams,
-        expirationTime: new Date().getTime() - 1000,
+        expirationTime: Date.now() - 1000,
       }
       expect(() => new SiwsMessage(invalidParams)).toThrow("SIWS Error: message has expired!")
     })
@@ -95,7 +95,7 @@ describe("SiwsMessage", () => {
     })
 
     it("should throw error when if notBefore is at or after expirationTime", () => {
-      const now = new Date().getTime()
+      const now = Date.now()
       const invalidParams = {
         ...validParams,
         issuedAt: now,

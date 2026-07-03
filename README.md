@@ -1,99 +1,44 @@
-<br/>
-
-<p align="center">
-  <a href="https://siws.xyz">
-      <picture>
+<div align="center">
+    <picture>
         <source media="(prefers-color-scheme: dark)" srcset="https://github.com/TalismanSociety/siws/blob/main/assets/Logo-dark.svg">
         <img alt="siws logo" src="https://github.com/TalismanSociety/siws/blob/main/assets/Logo-light.svg" width="auto" height="60">
-      </picture>
-</a>
-</p>
-<p align="center">
-  Sign-In with Substrate
-<p>
+    </picture>
+</div>
 
-<br>
+# SIWS — Sign-In with Substrate
 
-![SIWS Example](https://github.com/TalismanSociety/siws/blob/main/assets/siws-example.png?raw=true "SIWS Example")
+Monorepo for SIWS.
 
-# Sign-In with Substrate
+## Packages
 
-`@talismn/siws` is a package that lets you easily allow users to authenticate themselves with your off chain services by signing in with their Substrate accounts.
+| Path | Description |
+| --- | --- |
+| [`packages/siws`](packages/siws) | The [`@talismn/siws`](https://www.npmjs.com/package/@talismn/siws) library |
+| [`apps/demo`](apps/demo) | Next.js demo dapp showcasing the full sign-in flow |
+| [`apps/docs`](apps/docs) | Documentation site (Astro + Starlight) |
 
-## Problem & Motivation
+## Development
 
-When building Signet, an enterprise tool for companies to manage their on-chain organisations in the Substrate ecosystem, we needed a way for users to prove that they own an address before they can request for resources relevant to that address. There was no solution yet that offered good user experience, where users could easily understand what they are signing with their wallet. Inspired by [Sign-in with Ethereum](https://github.com/spruceid/siwe), we decided to build the right tool for the Substrate ecosystem.
-
-## Features
-
-- Construct human readable sign in message
-- Construct message in stringified JSON format
-- Decode and parse string message of both format into JS object
-- Basic validations (e.g. expiration)
-- Utility `Address` to help with dealing with address string
-- Utility `verifySIWS` to help verify that a signature is valid
-- Full Typescript support
-- Framework agnostic: no peer dependencies, works with any wallet exposing a `signer.signRaw` method
-
-## Installation
+Requires [pnpm](https://pnpm.io) 11+.
 
 ```bash
-$ npm install @talismn/siws
+pnpm install
+
+# build everything (lib first, then apps)
+pnpm build
+
+# run lib tests
+pnpm --filter @talismn/siws test
+
+# lib tsc --watch + demo next dev, in parallel
+pnpm dev
+
+# format / lint (biome)
+pnpm format
+pnpm lint
 ```
 
-## Usage
+## Releases
 
-### Frontend
-
-```typescript
-// 1. import necessary modules
-// `web3FromSource` is optional: any object exposing a `signer.signRaw` method works
-import { web3FromSource } from "@polkadot/extension-dapp"
-import { SiwsMessage } from "@talismn/siws"
-
-// 2. handle sign in after `account` is selected
-const handleSignIn = async () => {
-  const siws = new SiwsMessage({
-    domain: "localhost",
-    uri: "http://localhost:3000/sign-in",
-    address: account.address,
-    nonce, // a challenge generated from backend
-    statement: "Welcome to my dapp!",
-  })
-
-  // get the injector so we can sign the message
-  const injectedExtension = await web3FromSource(account.meta.source)
-  const signed = await siws.sign(injectedExtension)
-
-  // api to sign in with backend
-  await signIn(signed)
-}
-```
-
-### Backend
-
-```typescript
-// 1. import siws
-import { verifySIWS } from "@talismn/siws"
-
-// 2. backend handler to handle sign in request
-const handleSignInRequest = ({ signature, message, address }) => {
-  // verify that signature is valid
-  const siwsMessage = await verifySIWS(message, signature, address)
-
-  // ... user has proven ownership of address and hence authenticated!
-}
-```
-
-## Breaking changes
-
-- **Azero ID removed**: the `azeroId` field, its rendering into the signed message, and the `SiwsMessage.verifyAzeroId()` method have been removed. Azero ID was never cryptographically authenticated (only the address is), so it must not be trusted as an identity — resolve it yourself after verification if you need it. Remove `azeroId` from any `SiwsMessage` construction. Messages signed by older clients that still contain a `(name.azero)` line remain **verifiable**: the line is tolerated on parse and ignored.
-
-## Documentation
-
-Check out our [full guide](https://docs.siws.xyz/) on how to implement SIWS into your dapp!
-
-## Support
-
-- [Talisman](https://talisman.xyz)
-- [Web3 Foundation](https://grants.web3.foundation/)
+`@talismn/siws` is published from `packages/siws` via semantic-release on push to `main`.
+Conventional commits drive the version bump; scope demo/docs-only changes as `chore(demo):` / `chore(docs):` (or any type with those scopes) so they don't trigger a library release.

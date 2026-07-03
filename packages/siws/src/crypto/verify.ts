@@ -125,9 +125,9 @@ const verifySingle = (
       type === "ed25519"
         ? verifyEd25519(message, inner, publicKey)
         : type === "sr25519"
-        ? verifySr25519(message, inner, publicKey)
-        : verifyEcdsa("blake2")(message, inner, publicKey) ||
-          verifyEcdsa("keccak")(message, inner, publicKey)
+          ? verifySr25519(message, inner, publicKey)
+          : verifyEcdsa("blake2")(message, inner, publicKey) ||
+            verifyEcdsa("keccak")(message, inner, publicKey)
     return { crypto: isValid ? type : "none", isValid }
   }
 

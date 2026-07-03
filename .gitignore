@@ -1,7 +1,17 @@
-# Dependency directories
+# Dependencies
 node_modules
 
-# Output of 'npm run build'
+# Build outputs
 dist
-
 coverage
+.next/
+.astro/
+*.tsbuildinfo
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Misc
+.DS_Store

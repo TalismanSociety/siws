@@ -16,8 +16,8 @@ export const validParams = {
   nonce: "1234567890",
   chainId: "polkadot",
   // expires in 30 seconds
-  expirationTime: new Date().getTime() + 30_000,
-  notBefore: new Date().getTime(),
+  expirationTime: Date.now() + 30_000,
+  notBefore: Date.now(),
   requestId: "client-specific request ID",
   resources: [
     "http://some-domain/path/to/resource",

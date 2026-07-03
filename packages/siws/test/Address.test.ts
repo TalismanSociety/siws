@@ -113,7 +113,7 @@ describe("ss58 codec", () => {
 
   it("should throw on invalid checksum", () => {
     // last characters tampered
-    expect(() => decodeSs58Address(SS58_VECTOR.encodings[42].slice(0, -2) + "11")).toThrow()
+    expect(() => decodeSs58Address(`${SS58_VECTOR.encodings[42].slice(0, -2)}11`)).toThrow()
   })
 
   it("should throw on reserved prefixes", () => {

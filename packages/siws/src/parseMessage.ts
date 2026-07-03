@@ -1,4 +1,3 @@
-import { Address } from "./utils.js"
 import { SiwsMessage } from "./SiwsMessage.js"
 
 export const parseJson = (json: string): SiwsMessage | undefined => {
@@ -36,7 +35,7 @@ export const parseJson = (json: string): SiwsMessage | undefined => {
       requestId,
       resources,
     })
-  } catch (e) {
+  } catch {
     throw new Error("SIWS Error: Invalid SIWS json message.")
   }
 }
@@ -46,16 +45,12 @@ export const parseMessage = (message: string): SiwsMessage => {
   try {
     const jsonSiwsMessage = parseJson(message)
     if (jsonSiwsMessage) return jsonSiwsMessage
-  } catch (e) {}
+  } catch {}
 
   try {
-    let domain: string | undefined
-    let address: string | undefined
-    let statement: string | undefined
     let uri: string | undefined
     let version: string | undefined
     let nonce: string | undefined
-    let chainName: string | undefined
     let chainId: number | string | undefined
     let expirationTime: number | undefined
     let issuedAt: number | undefined
@@ -73,20 +68,20 @@ export const parseMessage = (message: string): SiwsMessage => {
     const introLine = headers[0]
     const introLineParts = introLine.split(" wants you to sign in with your ")
     if (introLineParts.length !== 2) throw new Error()
-    domain = introLineParts[0]
+    const domain = introLineParts[0]
 
     if (introLineParts[1].length === 8) throw new Error()
-    chainName = introLineParts[1].replace(" account:", "")
+    const chainName = introLineParts[1].replace(" account:", "")
 
     // parse address
-    address = headers[1]
+    const address = headers[1]
     if (!address) throw new Error()
 
     // headers[2], if present, is a legacy `(azeroId)` line. Azero ID support was removed;
     // the line is tolerated (ignored) so messages signed by older clients still parse and verify.
 
     // parse statement: statement exists if there are 3 sections
-    statement = sections[2] ? sections[1] : undefined
+    const statement = sections[2] ? sections[1] : undefined
     if (statement !== undefined && statement.length === 0) throw new Error()
 
     // parse uri, nonce, chain id, issued at, expiration time

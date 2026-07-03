@@ -1,0 +1,17 @@
+{
+  "branches": ["main"],
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "releaseRules": [
+          { "scope": "demo", "release": false },
+          { "scope": "docs", "release": false }
+        ]
+      }
+    ],
+    "@semantic-release/release-notes-generator",
+    ["@semantic-release/npm", { "pkgRoot": "packages/siws" }],
+    "@semantic-release/github"
+  ]
+}

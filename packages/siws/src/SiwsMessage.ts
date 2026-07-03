@@ -47,13 +47,7 @@ export class SiwsMessage {
     param:
       | (Omit<
           SiwsMessage,
-          | "prepareJson"
-          | "asJson"
-          | "prepareMessage"
-          | "sign"
-          | "signJson"
-          | "verify"
-          | "version"
+          "prepareJson" | "asJson" | "prepareMessage" | "sign" | "signJson" | "verify" | "version"
         > & { version?: string })
       | string,
   ) {
@@ -68,9 +62,10 @@ export class SiwsMessage {
     this.uri = param.uri
     this.nonce = param.nonce
     this.chainId = param.chainId
+    const parsedAddress = Address.fromSs58(param.address)
     this.chainName =
       param.chainName ??
-      ((Address.fromSs58(param.address) || {}).isEthereum ? "Ethereum" : "Substrate")
+      (parsedAddress !== false && parsedAddress.isEthereum ? "Ethereum" : "Substrate")
     this.expirationTime = param.expirationTime
     this.issuedAt = param.issuedAt
     this.notBefore = param.notBefore
@@ -93,7 +88,7 @@ export class SiwsMessage {
       nonce: this.nonce,
       chainId: this.chainId,
       chainName: this.chainName,
-      issuedAt: this.issuedAt ?? new Date().getTime(),
+      issuedAt: this.issuedAt ?? Date.now(),
       expirationTime: this.expirationTime,
       notBefore: this.notBefore,
       version: this.version,
@@ -107,7 +102,7 @@ export class SiwsMessage {
    */
   prepareJson(): string {
     this.validateMessage()
-    this.issuedAt = this.issuedAt ?? new Date().getTime()
+    this.issuedAt = this.issuedAt ?? Date.now()
     return JSON.stringify(this.asJson, undefined, 2)
   }
 
@@ -136,7 +131,7 @@ export class SiwsMessage {
 
     body.push(`Nonce: ${this.nonce}`)
 
-    this.issuedAt = this.issuedAt ?? new Date().getTime()
+    this.issuedAt = this.issuedAt ?? Date.now()
     body.push(`Issued At: ${new Date(this.issuedAt).toISOString()}`)
 
     if (this.expirationTime)
@@ -148,7 +143,9 @@ export class SiwsMessage {
 
     if (this.resources?.length) {
       body.push(`Resources:`)
-      this.resources.forEach(resource => body.push(`- ${resource}`))
+      this.resources.forEach(resource => {
+        body.push(`- ${resource}`)
+      })
     }
 
     message += body.join("\n")
@@ -212,13 +209,14 @@ export class SiwsMessage {
     if (this.issuedAt) {
       const issuedAtDate = new Date(this.issuedAt)
       // invalid timestamp
-      if (isNaN(issuedAtDate.getTime())) throw new Error("SIWS Error: issuedAt is not a valid date")
+      if (Number.isNaN(issuedAtDate.getTime()))
+        throw new Error("SIWS Error: issuedAt is not a valid date")
     }
 
     if (this.expirationTime) {
       const expirationTimeDate = new Date(this.expirationTime)
       // invalid timestamp
-      if (isNaN(expirationTimeDate.getTime()))
+      if (Number.isNaN(expirationTimeDate.getTime()))
         throw new Error("SIWS Error: expirationTime is not a valid date")
 
       // cannot expire before issuedAt
@@ -229,14 +227,14 @@ export class SiwsMessage {
         throw new Error("SIWS Error: expirationTime must be greater than notBefore")
 
       // token has expired
-      if (expirationTimeDate.getTime() <= new Date().getTime())
+      if (expirationTimeDate.getTime() <= Date.now())
         throw new Error("SIWS Error: message has expired!")
     }
 
     if (this.notBefore) {
       const notBeforeTimeDate = new Date(this.notBefore)
       // invalid timestamp
-      if (isNaN(notBeforeTimeDate.getTime()))
+      if (Number.isNaN(notBeforeTimeDate.getTime()))
         throw new Error("SIWS Error: notBefore is not a valid date")
     }
 

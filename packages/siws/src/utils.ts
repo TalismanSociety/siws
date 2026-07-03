@@ -44,7 +44,7 @@ export class Address {
         ? hexToU8a(addressCandidate)
         : decodeSs58Address(addressCandidate)
       return new Address(bytes)
-    } catch (error) {
+    } catch {
       // invalid address
       return false
     }

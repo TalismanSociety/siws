@@ -7,7 +7,7 @@ const validSiwsMessage = new SiwsMessage(validParams)
 const invalidMessages = {
   "empty string": "",
   "random string": "random string",
-  "number": 1234,
+  number: 1234,
   "missing domain": `wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n\nURI: https://siws.xyz\nNonce: 1234567890`,
   "missing chainName": `siws.xyz wants you to sign in with your account:\n${VALID_ADDRESS}\n\nURI: https://siws.xyz\nNonce: 1234567890`,
   "missing address": `siws.xyz wants you to sign in with your Substrate account:\n\nURI: https://siws.xyz\nNonce: 1234567890`,

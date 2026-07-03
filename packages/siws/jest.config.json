@@ -14,5 +14,5 @@
     ],
     "^.+\\.js$": "babel-jest"
   },
-  "transformIgnorePatterns": ["/node_modules/(?!(@noble|@scure)/).+\\.js$"]
+  "transformIgnorePatterns": ["/node_modules/\\.pnpm/(?!(@noble|@scure)\\+)"]
 }
