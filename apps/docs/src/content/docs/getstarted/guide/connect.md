@@ -12,7 +12,7 @@ Let's begin with a TanStack Start app. You can scaffold one following the [TanSt
 npm install @talismn/siws jose
 ```
 
-That's it — no wallet SDK required. Substrate wallet extensions all inject the same standard interface at `window.injectedWeb3`, and we'll talk to it directly.
+That's it — no wallet SDK required. Substrate wallet extensions all inject the same standard interface at `window.injectedWeb3`, and our examples talk to it directly so they stay framework agnostic. For a real application, we recommend using a JavaScript framework for Substrate to handle wallet connections, such as [polkadot-api](https://papi.how) or the legacy [polkadot.js](https://polkadot.js.org/docs/) libraries.
 
 ## Wallet helpers
 
