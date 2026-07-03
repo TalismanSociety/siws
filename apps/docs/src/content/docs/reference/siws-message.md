@@ -9,7 +9,7 @@ The `SiwsMessage` class helps you construct a human-readable message, and provid
 const siwsMessage = new SiwsMessage({
   nonce,
   domain: "localhost",
-  uri: "https://localhost:3000",
+  uri: "https://localhost:5173",
   statement: "Welcome to SIWS! Sign in to see how it works.",
   address: address.toSs58(0),
   chainName: "Polkadot",
@@ -27,8 +27,12 @@ const humanReadableMessage = siwsMessage.prepareMessage()
 - `statement` (optional): Human-readable ASCII assertion that the user will sign, and it must not contain `\n`.
 - `chainName` (Optional): Will appear as _sign in with your {{chainName}} account:_
 - `chainId` (Optional): Identifier for chain-specific applications
+- `version` (Optional): SIWS message version. Defaults to the current version (`1.0.0`).
 - `expirationTime` (Optional): Timestamp that indicates when the signed authentication message is no longer valid.
 - `issuedAt` (Optional): Timestamp of the current time.
+- `notBefore` (Optional): Timestamp before which the signed authentication message is not yet valid.
+- `requestId` (Optional): System-specific identifier that may be used to uniquely refer to the sign-in request. Must not contain newlines.
+- `resources` (Optional): List of URI references the user is authorizing as part of the sign-in.
 
 ## `SiwsMessage` Methods
 
@@ -40,26 +44,24 @@ A getter that returns all properties as an object without the methods. This is u
 const processed = processData(siwsMessage.asJson)
 ```
 
-### `sign(injectedExtension)`
+### `sign(signer)`
 
-Signs the message in one line and returns both the signature and message. Requires the injector that you can obtain with polkadot api.
+Signs the message in one line and returns both the signature and message. Accepts any object exposing `signer.signRaw` (the `SiwsSigner` type) — the injected extension returned by a wallet's `enable()` call works directly, no wallet SDK required.
 
 ```javascript
-// import web3FromSource
-import { web3FromSource } from "@polkadot/extension-dapp"
+// enable the wallet extension via the standard window.injectedWeb3 interface
+const injected = await window.injectedWeb3["talisman"].enable("My dApp")
 
-// get the injector of your account to create a Signature prompt
-const injectedExtension = await web3FromSource(selectedAccount.meta.source)
-const { message, signature } = siwsMessage.sign(injectedExtension)
+const { message, signature } = await siwsMessage.sign(injected)
 ```
 
 ### `prepareMessage()`
 
-Prepares a signable message in human-readable format. This is useful if you want to build your own custom signing logics instead of using the `siwsMessage.sign(injector)` method.
+Prepares a signable message in human-readable format. This is useful if you want to build your own custom signing logics instead of using the `siwsMessage.sign(signer)` method.
 
 ```javascript
 const message = siwsMessage.prepareMessage()
-const signature = injector.signer.signRaw({
+const { signature } = await injected.signer.signRaw({
   address,
   data: message,
   type: "payload",
@@ -72,7 +74,7 @@ Sometimes you may want to show the message that users sign as JSON (e.g. if you 
 
 ```javascript
 const message = siwsMessage.prepareJson()
-const signature = injector.signer.signRaw({
+const { signature } = await injected.signer.signRaw({
   address,
   data: message,
   type: "payload",

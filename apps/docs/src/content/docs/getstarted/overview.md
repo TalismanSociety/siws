@@ -16,10 +16,13 @@ SIWS is a JavaScript package that lets you seamlessly integrate "Sign-In with Su
 3. **Full Typescript Support**
    The `@talismn/siws` package is built with comprehensive TypeScript support.
 
+4. **Framework Agnostic**
+   No `@polkadot/*` dependencies — works with any wallet exposing the standard `signer.signRaw` interface, in any JavaScript runtime including Node.js, browsers, and edge runtimes like Cloudflare Workers.
+
 ## Resources
 
-- [SIWS Demo App](https://siws.xyz) The demo app is a Next.js app paired with a Vercel serverless function to handle the authentication and response.
-- [Demo App Source Code](https://github.com/TalismanSociety/siws-demo) Refer to source code of our demo app to guide you through the integration process.
+- [SIWS Demo App](https://siws.xyz) The demo app is a TanStack Start app deployed as a Cloudflare Worker, using server functions to handle the authentication and response.
+- [Demo App Source Code](https://github.com/TalismanSociety/siws/tree/main/apps/demo) Refer to source code of our demo app to guide you through the integration process.
 - [SIWS Source Code](https://github.com/TalismanSociety/siws) Check the implementation of SIWS package.
 
 ## Support and Community

@@ -15,10 +15,11 @@ Now let's wrap it up and use that JWT to access the protected service.
 
 First, let's create a UI component that will consume the protected data. In `src/components/demo/Profile.tsx`, access the protected service with the JWT we obtained:
 
-```javascript
+```tsx
 // src/components/demo/Profile.tsx
 
 import { useCallback } from "react"
+import { getProtectedText } from "../../server/auth"
 
 type Props = {
   jwtToken: string
@@ -27,15 +28,9 @@ type Props = {
 export const Profile: React.FC<Props> = ({ jwtToken }) => {
   const generate = useCallback(async (jwtToken?: string) => {
     try {
-      const res = await fetch("/api/protected", {
-        headers: {
-          Authorisation: `Bearer ${jwtToken}`,
-        },
-      })
-      const data = await res.json()
-      if (data.error) throw new Error(data.error)
-      console.log(data.randomText)
-    } catch (e: any) {
+      const { randomText } = await getProtectedText({ data: { jwtToken } })
+      console.log(randomText)
+    } catch (e) {
       // unauthenticated
     }
   }, [])
@@ -46,13 +41,13 @@ export const Profile: React.FC<Props> = ({ jwtToken }) => {
 
 ## Handle JWT
 
-Remember in the `src/components/demo/SignIn.tsx` we called `onSignedIn` after a user has signed in? Let's handle that JWT so we can access the protected API using the `<Profile />` component we just created.
+Remember in the `src/components/demo/SignIn.tsx` we called `onSignedIn` after a user has signed in? Let's handle that JWT so we can access the protected service using the `<Profile />` component we just created.
 
-```javascript
+```tsx
 // src/components/demo/index.tsx
 
 import { useCallback, useEffect, useState } from "react"
-import { InjectedAccountWithMeta } from "@polkadot/extension-inject/types"
+import type { WalletAccount } from "../../lib/wallet"
 import { ConnectWallet } from "./ConnectWallet"
 import { SignIn } from "./SignIn"
 import { Profile } from "./Profile"
@@ -61,11 +56,11 @@ export const Demo = () => {
   // ...
 
   // create states to hold the JWT token and the signed in account
-  const [signedInWith, setSignedInWith] = useState<InjectedAccountWithMeta | undefined>()
+  const [signedInWith, setSignedInWith] = useState<WalletAccount | undefined>()
   const [jwtToken, setJwtToken] = useState<string | undefined>()
 
-    // called when `onSignedIn` is invoked
-  const handleSignedIn = (selectedAccount: InjectedAccountWithMeta, jwtToken: string) => {
+  // called when `onSignedIn` is invoked
+  const handleSignedIn = (selectedAccount: WalletAccount, jwtToken: string) => {
     setJwtToken(jwtToken)
     setSignedInWith(selectedAccount)
   }
