@@ -8,7 +8,7 @@
     "test": "pnpm -r test",
     "dev": "pnpm --parallel --filter @talismn/siws --filter siws-demo run dev",
     "format": "biome format --write .",
-    "lint": "biome check ."
+    "lint": "biome check . --error-on-warnings"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.0",
