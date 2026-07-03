@@ -18,9 +18,9 @@ try {
 ## Parameters
 
 - `message`: The full message that was signed, in either human-readable or JSON format.
-- `signature`: The hex signature returned by the wallet.
+- `signature`: The signature produced by the wallet — hex string or `Uint8Array`, raw or `<Bytes>`-wrapped.
 - `address`: The address that claims to have signed the message.
 
 ## Lower level: `verifySignature`
 
-If you need to verify a raw signature without parsing a SIWS message, the underlying `verifySignature(message, signature, address)` is also exported. It returns a `{ isValid, crypto }` result instead of throwing, where `crypto` is the detected signature scheme.
+If you need to verify a raw signature without parsing a SIWS message, the underlying `verifySignature(message, signature, address)` is also exported. It returns a `{ isValid, crypto, publicKey }` result instead of throwing, where `crypto` is the detected signature scheme.
