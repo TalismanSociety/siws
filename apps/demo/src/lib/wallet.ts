@@ -1,7 +1,7 @@
 /**
  * Minimal helpers around `window.injectedWeb3` — the standard interface all
  * Substrate wallet extensions inject. No wallet SDK required: the object
- * returned by `enable()` is directly compatible with `SiwsMessage.sign()`.
+ * returned by `enable()` exposes `signer.signRaw` to sign SIWS messages.
  */
 
 export type WalletAccount = {

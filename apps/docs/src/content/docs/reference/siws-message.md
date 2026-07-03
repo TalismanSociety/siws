@@ -44,39 +44,55 @@ A getter that returns all properties as an object without the methods. This is u
 const processed = processData(siwsMessage.asJson)
 ```
 
-### `sign(signer)`
-
-Signs the message in one line and returns both the signature and message. Accepts any object exposing `signer.signRaw` (the `SiwsSigner` type) — the injected extension returned by a wallet's `enable()` call works directly, no wallet SDK required.
-
-```javascript
-// enable the wallet extension via the standard window.injectedWeb3 interface
-const injected = await window.injectedWeb3["talisman"].enable("My dApp")
-
-const { message, signature } = await siwsMessage.sign(injected)
-```
-
 ### `prepareMessage()`
 
-Prepares a signable message in human-readable format. This is useful if you want to build your own custom signing logics instead of using the `siwsMessage.sign(signer)` method.
+Prepares the signable message in human-readable format. This exact string is what the user signs — with whatever signing interface your stack provides — and what your backend passes to `verifySIWS`.
 
 ```javascript
 const message = siwsMessage.prepareMessage()
-const { signature } = await injected.signer.signRaw({
-  address,
-  data: message,
-  type: "payload",
-})
 ```
 
 ### `prepareJson()`
 
-Sometimes you may want to show the message that users sign as JSON (e.g. if you building a dev focused application). `SiwsMessage` comes with a convenient `prepareJson()` method that prepares the message in a human readable JSON format.
+Sometimes you may want to show the message that users sign as JSON (e.g. if you are building a dev focused application). `SiwsMessage` comes with a convenient `prepareJson()` method that prepares the message in a human readable JSON format. It can be signed and verified exactly like the human-readable format.
 
 ```javascript
 const message = siwsMessage.prepareJson()
+```
+
+## Signing the message
+
+SIWS is unopinionated about signing: sign the `prepareMessage()` output with whatever your stack provides. `verifySIWS` accepts the resulting signature however it was produced — raw or `<Bytes>`-wrapped, hex string or `Uint8Array`, sr25519/ed25519/ecdsa.
+
+**Wallet extension directly (`window.injectedWeb3`):**
+
+```javascript
+const injected = await window.injectedWeb3["talisman"].enable("My dApp")
+
 const { signature } = await injected.signer.signRaw({
   address,
   data: message,
   type: "payload",
 })
+```
+
+**polkadot.js / dedot** — both use the same pjs-compatible `Signer`:
+
+```javascript
+// pjs: const injector = await web3FromSource(account.meta.source)
+// dedot: const injected = await window.injectedWeb3["talisman"].enable("My dApp")
+const { signature } = await injector.signer.signRaw({
+  address,
+  data: message,
+  type: "payload",
+})
+```
+
+**polkadot-api** — sign the message bytes with the account's `polkadotSigner`:
+
+```javascript
+import { u8aToHex } from "@talismn/siws"
+
+const sigBytes = await account.polkadotSigner.signBytes(new TextEncoder().encode(message))
+const signature = u8aToHex(sigBytes) // or send the raw bytes — verifySIWS accepts both
 ```

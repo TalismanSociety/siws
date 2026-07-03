@@ -3,15 +3,15 @@ import { decodeSs58Address, encodeSs58Address } from "./crypto/ss58.js"
 import { verifySignature } from "./crypto/verify.js"
 import { parseMessage } from "./parseMessage.js"
 
-export const isAzeroId = (azeroId: string) => {
-  const lowerCased = azeroId.toLowerCase()
-  return lowerCased.endsWith(".azero") || lowerCased.endsWith(".tzero")
-}
 /**
  * A util function that verifies that the `message` is signed by the `address` and matches the `signature`,
  * and returns a parsed SiwsMessage instance if the signature is valid.
  */
-export const verifySIWS = async (message: string, signature: string, address: string) => {
+export const verifySIWS = async (
+  message: string,
+  signature: string | Uint8Array,
+  address: string,
+) => {
   const verification = verifySignature(message, signature, address)
 
   if (!verification?.isValid) throw new Error("SIWS Error: Invalid signature.")

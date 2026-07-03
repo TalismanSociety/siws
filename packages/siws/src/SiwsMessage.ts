@@ -1,5 +1,4 @@
 import { verifySignature } from "./crypto/verify.js"
-import type { SiwsSigner } from "./types.js"
 import { Address } from "./utils.js"
 import { parseMessage } from "./parseMessage.js"
 
@@ -45,10 +44,9 @@ export class SiwsMessage {
 
   constructor(
     param:
-      | (Omit<
-          SiwsMessage,
-          "prepareJson" | "asJson" | "prepareMessage" | "sign" | "signJson" | "verify" | "version"
-        > & { version?: string })
+      | (Omit<SiwsMessage, "prepareJson" | "asJson" | "prepareMessage" | "verify" | "version"> & {
+          version?: string
+        })
       | string,
   ) {
     if (typeof param === "string") {
@@ -151,42 +149,6 @@ export class SiwsMessage {
     message += body.join("\n")
 
     return message
-  }
-
-  /**
-   * Signs the message in human readable format with any wallet exposing `signer.signRaw`
-   * (e.g. the result of `web3FromSource(injectedAccount.meta.source)`).
-   * */
-  async sign(injectedExtension: SiwsSigner): Promise<{ signature: string; message: string }> {
-    if (!injectedExtension.signer.signRaw)
-      throw new Error("Wallet does not support signing message.")
-
-    const message = this.prepareMessage()
-    const { signature } = await injectedExtension.signer.signRaw({
-      address: this.address,
-      data: message,
-      type: "payload",
-    })
-
-    return { signature, message }
-  }
-
-  /**
-   * Signs the message in stringified JSON format with any wallet exposing `signer.signRaw`
-   * (e.g. the result of `web3FromSource(injectedAccount.meta.source)`).
-   * */
-  async signJson(injectedExtension: SiwsSigner): Promise<{ signature: string; message: string }> {
-    if (!injectedExtension.signer.signRaw)
-      throw new Error("Wallet does not support signing message.")
-
-    const message = this.prepareJson()
-    const { signature } = await injectedExtension.signer.signRaw({
-      address: this.address,
-      data: message,
-      type: "payload",
-    })
-
-    return { signature, message }
   }
 
   private validateMessage() {

@@ -8,7 +8,6 @@ import { parseMessage } from "../src/parseMessage"
 import { u8aToHex } from "../src/crypto/bytes"
 import { encodeSs58Address } from "../src/crypto/ss58"
 import { verifySIWS } from "../src/utils"
-import type { SiwsSigner } from "../src/types"
 import { VALID_ADDRESS, validParams } from "./config"
 import { ED25519_VECTOR, SR25519_VECTOR, ECDSA_VECTOR, type SchemeVector } from "./vectors"
 
@@ -16,15 +15,6 @@ const wrapBytes = (message: string) =>
   concatBytes(utf8ToBytes("<Bytes>"), utf8ToBytes(message), utf8ToBytes("</Bytes>"))
 
 const validSiwsMessage = new SiwsMessage(validParams)
-const mockedInjectedExtension = {
-  signer: {
-    signRaw: jest.fn(() => {
-      return {
-        signature: "mockedSignature",
-      }
-    }),
-  },
-}
 describe("SiwsMessage", () => {
   describe("constructor", () => {
     it("should create an SIWS instance with correct params", () => {
@@ -176,53 +166,39 @@ on two lines`,
     })
   })
 
-  describe("sign", () => {
-    it("should throw error when signRaw method does not exist", async () => {
-      const siwsMessage = new SiwsMessage(validParams)
-      await expect(
-        siwsMessage.sign({
-          signer: {},
-        } as SiwsSigner),
-      ).rejects.toThrow("Wallet does not support signing message.")
-    })
+  describe("signing recipes", () => {
+    const seed = new Uint8Array(32).fill(11)
+    const publicKey = ed25519.getPublicKey(seed)
+    const address = encodeSs58Address(publicKey)
 
-    it("should call signRaw with the right parameters", async () => {
-      const siwsMessage = new SiwsMessage(validParams)
-      const preparedMessage = siwsMessage.prepareMessage()
-      const { signature } = await siwsMessage.sign(mockedInjectedExtension as unknown as SiwsSigner)
-      expect(mockedInjectedExtension.signer.signRaw).toHaveBeenCalledWith({
-        address: validParams.address,
-        data: preparedMessage,
-        type: "payload",
+    it("verifies a signature from an extension-style signRaw signer (injectedWeb3 / pjs / dedot)", async () => {
+      // wallet extensions sign the <Bytes>-wrapped message and return a hex signature
+      const signRaw = async ({ data }: { address: string; data: string; type: string }) => ({
+        signature: u8aToHex(ed25519.sign(wrapBytes(data), seed)),
       })
 
-      expect(signature).toEqual("mockedSignature")
-    })
-  })
+      const message = new SiwsMessage({ ...validParams, address }).prepareMessage()
+      const { signature } = await signRaw({ address, data: message, type: "payload" })
 
-  describe("signJson", () => {
-    it("should throw error when signRaw method does not exist", async () => {
-      const siwsMessage = new SiwsMessage(validParams)
-      await expect(
-        siwsMessage.signJson({
-          signer: {},
-        } as SiwsSigner),
-      ).rejects.toThrow("Wallet does not support signing message.")
+      const verified = await verifySIWS(message, signature, address)
+      expect(verified.address).toEqual(address)
     })
 
-    it("should call signRaw with the right parameters", async () => {
-      const siwsMessage = new SiwsMessage(validParams)
-      const jsonMessage = siwsMessage.prepareJson()
-      const { signature } = await siwsMessage.signJson(
-        mockedInjectedExtension as unknown as SiwsSigner,
-      )
-      expect(mockedInjectedExtension.signer.signRaw).toHaveBeenCalledWith({
-        address: validParams.address,
-        data: jsonMessage,
-        type: "payload",
-      })
+    it("verifies a signature from a polkadot-api style signBytes signer", async () => {
+      // PAPI wraps the payload with <Bytes>...</Bytes> unless it is pre-wrapped,
+      // and returns the signature as raw bytes
+      const signBytes = async (data: Uint8Array) =>
+        ed25519.sign(concatBytes(utf8ToBytes("<Bytes>"), data, utf8ToBytes("</Bytes>")), seed)
 
-      expect(signature).toEqual("mockedSignature")
+      const message = new SiwsMessage({ ...validParams, address }).prepareMessage()
+      const sigBytes = await signBytes(new TextEncoder().encode(message))
+
+      // the signature verifies both as raw bytes and hex-encoded
+      const verifiedFromBytes = await verifySIWS(message, sigBytes, address)
+      expect(verifiedFromBytes.address).toEqual(address)
+
+      const verifiedFromHex = await verifySIWS(message, u8aToHex(sigBytes), address)
+      expect(verifiedFromHex.address).toEqual(address)
     })
   })
 

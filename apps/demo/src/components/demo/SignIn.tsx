@@ -51,11 +51,20 @@ export const SignIn: React.FC<Props> = ({ accounts, onCancel, onSignedIn }) => {
         expirationTime: Date.now() + 2 * 60 * 1000,
       })
 
+      // sign the SIWS message with the wallet's raw signer —
+      // any Substrate signing interface works, the backend verifies the result
       const injected = await getInjected(selectedAccount.meta.source)
-      const signed = await siwsMessage.sign(injected)
+      if (!injected.signer.signRaw) throw new Error("Wallet does not support signing message.")
+
+      const message = siwsMessage.prepareMessage()
+      const { signature } = await injected.signer.signRaw({
+        address: address.toSs58(0),
+        data: message,
+        type: "payload",
+      })
 
       const { jwtToken } = await verifySignIn({
-        data: { ...signed, address: address.toSs58(0) },
+        data: { message, signature, address: address.toSs58(0) },
       })
 
       // Hooray we're signed in!

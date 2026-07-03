@@ -30,9 +30,14 @@ const siwsMessage = new SiwsMessage({
   chainName: "Polkadot",
 })
 
-// ask the wallet for a signature — a human-readable message is shown to the user.
-// works with any wallet exposing `signer.signRaw`
-const { message, signature } = await siwsMessage.sign(injected)
+// prepare the exact string to sign, and ask the wallet for a signature —
+// a human-readable message is shown to the user
+const message = siwsMessage.prepareMessage()
+const { signature } = await injected.signer.signRaw({
+  address: account.address,
+  data: message,
+  type: "payload",
+})
 
 // send { message, signature, address } to your backend
 await fetch("/api/verify", {
@@ -61,7 +66,7 @@ if (siwsMessage.domain !== "myapp.com") throw new Error("Wrong domain!")
 // issue a session or JWT as you would with any other login method.
 ```
 
-`verifySIWS` runs in any JavaScript runtime — Node.js, edge runtimes like Cloudflare Workers, or even the browser.
+`verifySIWS` runs in any JavaScript runtime — Node.js, edge runtimes like Cloudflare Workers, or even the browser. And it doesn't care how the message was signed: any Substrate signing interface works — see [SiwsMessage](/docs/reference/siws-message/) for polkadot-api and dedot signing recipes.
 
 ## Complete example
 
