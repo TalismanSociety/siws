@@ -2,37 +2,42 @@
   "name": "siws-demo",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "dev": "vite dev",
+    "build": "vite build && tsc --noEmit",
+    "preview": "vite preview",
+    "deploy": "pnpm run build && wrangler deploy",
+    "cf-typegen": "wrangler types"
   },
   "dependencies": {
     "@noble/hashes": "^2.2.0",
     "@radix-ui/react-icons": "^1.3.0",
-    "@radix-ui/react-slot": "^1.0.2",
-    "@radix-ui/react-toast": "^1.1.5",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-toast": "^1.2.0",
     "@talismn/siws": "workspace:*",
-    "@types/jsonwebtoken": "^9.0.5",
-    "@vercel/analytics": "^1.1.1",
+    "@tanstack/react-router": "^1.130.0",
+    "@tanstack/react-start": "^1.130.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "jsonwebtoken": "^9.0.2",
-    "next": "14.0.1",
-    "react": "^18",
-    "react-dom": "^18",
+    "jose": "^6.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
     "truncate-middle": "^1.0.6"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@cloudflare/vite-plugin": "^1.13.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
     "@types/truncate-middle": "^1.0.4",
+    "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.0.1",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^7.1.0",
+    "wrangler": "^4.36.0"
   }
 }

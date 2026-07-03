@@ -12,6 +12,14 @@ coverage
 .env
 .env.*
 !.env.example
+.dev.vars
+
+# Cloudflare / TanStack Start
+.wrangler/
+routeTree.gen.ts
+.tanstack/
+.nitro/
+.output/
 
 # Misc
 .DS_Store

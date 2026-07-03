@@ -1,7 +1,37 @@
 @tailwind base;
 
+@font-face {
+  font-family: "Unbounded";
+  src: url("/fonts/Unbounded-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Unbounded";
+  src: url("/fonts/Unbounded-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Unbounded";
+  src: url("/fonts/Unbounded-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Unbounded";
+  src: url("/fonts/Unbounded-Black.woff2") format("woff2");
+  font-weight: 800;
+  font-display: swap;
+}
+
+:root {
+  --font-unbounded: "Unbounded";
+}
+
 body {
   @apply bg-stone-950;
+  font-family: "Inter", sans-serif;
 }
 
 /* width */

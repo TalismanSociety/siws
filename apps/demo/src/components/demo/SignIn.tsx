@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { getInjected, type WalletAccount } from "@/lib/wallet"
+import { getNonce, verifySignIn } from "@/server/auth"
 import { Address, SiwsMessage } from "@talismn/siws"
 import { useToast } from "../ui/use-toast"
 import { Account } from "./Account"
@@ -36,9 +37,7 @@ export const SignIn: React.FC<Props> = ({ accounts, onCancel, onSignedIn }) => {
 
       setSigningIn(true)
       // request nonce from server
-      const nonceRes = await fetch("/api/nonce")
-      const data = await nonceRes.json()
-      const { nonce } = data
+      const { nonce } = await getNonce()
 
       const siwsMessage = new SiwsMessage({
         domain: SIWS_DOMAIN,
@@ -55,15 +54,12 @@ export const SignIn: React.FC<Props> = ({ accounts, onCancel, onSignedIn }) => {
       const injected = await getInjected(selectedAccount.meta.source)
       const signed = await siwsMessage.sign(injected)
 
-      const verifyRes = await fetch("/api/verify", {
-        method: "POST",
-        body: JSON.stringify({ ...signed, address: address.toSs58(0) }),
+      const { jwtToken } = await verifySignIn({
+        data: { ...signed, address: address.toSs58(0) },
       })
-      const verified = await verifyRes.json()
-      if (verified.error) throw new Error(verified.error)
 
       // Hooray we're signed in!
-      onSignedIn(selectedAccount, verified.jwtToken)
+      onSignedIn(selectedAccount, jwtToken)
     } catch (e) {
       toast({
         title: "Uh oh! Couldn't sign in.",

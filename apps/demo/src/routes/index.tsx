@@ -1,12 +1,17 @@
+import { createFileRoute } from "@tanstack/react-router"
 import { Demo } from "@/components/demo"
 import { Button } from "@/components/ui/button"
 import { W3FLogo } from "@/components/assets/W3FLogo"
 import { MadeByTalisman } from "@/components/assets/MadeByTalisman"
 import { TalismanLogo } from "@/components/assets/TalismanLogo"
 
-export default function Home() {
+export const Route = createFileRoute("/")({
+  component: Home,
+})
+
+function Home() {
   return (
-    <main className={`flex min-h-screen flex-col items-center justify-between py-24 px-4 lg:px-24`}>
+    <main className="flex min-h-screen flex-col items-center justify-between py-24 px-4 lg:px-24">
       <div className="w-full max-w-4xl flex gap-8 flex-col lg:flex-row items-center lg:items-start">
         <div className="w-full p-4 flex flex-col items-center lg:items-start gap-2 text-center lg:text-left h-full lg:min-h-[384px]">
           <h1 className="text-white text-5xl font-medium font-unbounded">SIWS</h1>

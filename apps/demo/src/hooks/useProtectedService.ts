@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react"
 import { useToast } from "../components/ui/use-toast"
+import { getProtectedText } from "@/server/auth"
 
 export const useProtectedService = () => {
   const [randomText, setRandomText] = useState<string | null>(null)
@@ -11,14 +12,8 @@ export const useProtectedService = () => {
       dismiss()
       setLoading(true)
       try {
-        const res = await fetch("/api/protected", {
-          headers: {
-            Authorisation: `Bearer ${jwtToken}`,
-          },
-        })
-        const data = await res.json()
-        if (data.error) throw new Error(data.error)
-        setRandomText(data.randomText)
+        const { randomText } = await getProtectedText({ data: { jwtToken } })
+        setRandomText(randomText)
       } catch (e) {
         setRandomText(null)
         toast({
