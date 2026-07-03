@@ -3,6 +3,8 @@ import starlight from "@astrojs/starlight"
 
 // https://astro.build/config
 export default defineConfig({
+  // served as static assets under /docs by the demo app's Cloudflare Worker
+  base: "/docs",
   integrations: [
     starlight({
       title: "SIWS",

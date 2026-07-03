@@ -21,7 +21,7 @@ function Home() {
           </p>
           <p className="text-stone-500">By the Signet team at Talisman</p>
           <div className="flex items-center gap-4 mt-4">
-            <a href="https://docs.siws.xyz/" target="_blank" rel="noreferrer">
+            <a href="/docs/" target="_blank" rel="noreferrer">
               <Button variant="outline" size="lg">
                 Docs
               </Button>
