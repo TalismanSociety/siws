@@ -16,7 +16,6 @@ const invalidMessages = {
   "missing body": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}`,
   "missing body with statement": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n\nThis is a test statement`,
   "missing statement text": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n\n\n\nNonce: 1234567890\nURI: https://siws.xyz`,
-  "invalid azero id": `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n(siws.azeerrooooo)\n\nThis is a test statement\n\nNonce: 1234567890\nURI: https://siws.xyz`,
 }
 
 describe("parseMessage", () => {
@@ -37,6 +36,15 @@ describe("parseMessage", () => {
     const json = parsed.asJson
     expect(json.address).toBe(EVM_ADDRESS)
     expect(json.chainName).toBe("Ethereum")
+  })
+
+  it("should tolerate a legacy (azeroId) line without capturing it", () => {
+    const parsed = parseMessage(
+      `siws.xyz wants you to sign in with your Substrate account:\n${VALID_ADDRESS}\n(siws.azero)\n\nThis is a test statement\n\nURI: https://siws.xyz\nVersion: 1.0.0\nNonce: 1234567890`,
+    )
+    expect(parsed.address).toBe(VALID_ADDRESS)
+    expect(parsed.statement).toBe("This is a test statement")
+    expect((parsed as unknown as { azeroId?: string }).azeroId).toBeUndefined()
   })
 
   // TODO: allow ethereum address

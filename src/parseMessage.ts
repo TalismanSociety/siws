@@ -1,4 +1,4 @@
-import { Address, isAzeroId } from "./utils.js"
+import { Address } from "./utils.js"
 import { SiwsMessage } from "./SiwsMessage.js"
 
 export const parseJson = (json: string): SiwsMessage | undefined => {
@@ -6,7 +6,6 @@ export const parseJson = (json: string): SiwsMessage | undefined => {
     const {
       domain,
       address,
-      azeroId,
       statement,
       uri,
       version,
@@ -25,7 +24,6 @@ export const parseJson = (json: string): SiwsMessage | undefined => {
     return new SiwsMessage({
       domain,
       address,
-      azeroId,
       statement,
       uri,
       version,
@@ -53,7 +51,6 @@ export const parseMessage = (message: string): SiwsMessage => {
   try {
     let domain: string | undefined
     let address: string | undefined
-    let azeroId: string | undefined
     let statement: string | undefined
     let uri: string | undefined
     let version: string | undefined
@@ -85,9 +82,8 @@ export const parseMessage = (message: string): SiwsMessage => {
     address = headers[1]
     if (!address) throw new Error()
 
-    // remove the brackets
-    azeroId = headers[2]?.slice(1, -1)
-    if (azeroId && !isAzeroId(azeroId)) throw new Error("Invalid Azero ID format")
+    // headers[2], if present, is a legacy `(azeroId)` line. Azero ID support was removed;
+    // the line is tolerated (ignored) so messages signed by older clients still parse and verify.
 
     // parse statement: statement exists if there are 3 sections
     statement = sections[2] ? sections[1] : undefined
@@ -127,7 +123,6 @@ export const parseMessage = (message: string): SiwsMessage => {
       statement,
       uri,
       version,
-      azeroId,
       nonce,
       chainName,
       chainId,

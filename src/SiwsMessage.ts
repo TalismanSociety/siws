@@ -18,8 +18,6 @@ export class SiwsMessage {
   domain: string
   /**Substrate address signing the message. */
   address: string
-  /**Azero ID */
-  azeroId?: string
   /**Human-readable ASCII assertion that the user will sign, and it must not contain `\n`. */
   statement?: string
   /**RFC 3986 URI referring to the resource that is the subject of the signing. */
@@ -54,7 +52,6 @@ export class SiwsMessage {
           | "prepareMessage"
           | "sign"
           | "signJson"
-          | "verifyAzeroId"
           | "verify"
           | "version"
         > & { version?: string })
@@ -67,7 +64,6 @@ export class SiwsMessage {
 
     this.domain = param.domain
     this.address = param.address
-    this.azeroId = param.azeroId
     this.statement = param.statement
     this.uri = param.uri
     this.nonce = param.nonce
@@ -92,7 +88,6 @@ export class SiwsMessage {
     return {
       domain: this.domain,
       address: this.address,
-      azeroId: this.azeroId,
       statement: this.statement,
       uri: this.uri,
       nonce: this.nonce,
@@ -128,7 +123,6 @@ export class SiwsMessage {
       this.chainName ?? "Substrate"
     } account:\n`
     message += `${this.address}\n`
-    if (this.azeroId) message += `(${this.azeroId})\n`
     message += "\n"
 
     if (this.statement) message += `${this.statement}\n\n`
@@ -255,14 +249,6 @@ export class SiwsMessage {
           throw new Error(`SIWS Error: resources must be valid URLs: ${resource}`)
       })
     }
-  }
-
-  /**
-   * @deprecated Azero ID resolution has been removed, this always resolves to `true`.
-   * The `azeroId` field is still parsed and rendered for message compatibility, but is no longer verified.
-   */
-  async verifyAzeroId(): Promise<boolean> {
-    return true
   }
 
   // TODO: add optional domain, nonce, time

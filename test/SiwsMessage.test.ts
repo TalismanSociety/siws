@@ -161,7 +161,7 @@ on two lines`,
       const message = parseMessage(messageString) // to capture the issued at timestamp which is generated
       const parsedMessage = messageString.split("\n\n")
       expect(parsedMessage).toEqual([
-        `${validParams.domain} wants you to sign in with your Substrate account:\n${validParams.address}\n(${validParams.azeroId})`,
+        `${validParams.domain} wants you to sign in with your Substrate account:\n${validParams.address}`,
         validParams.statement,
         `URI: ${validParams.uri}\nVersion: 1.0.0\nChain ID: ${validParams.chainId}\nNonce: ${
           validParams.nonce
@@ -223,18 +223,6 @@ on two lines`,
       })
 
       expect(signature).toEqual("mockedSignature")
-    })
-  })
-
-  describe("verifyAzeroId", () => {
-    it("should resolve true (deprecated no-op)", async () => {
-      const siwsMessage = new SiwsMessage(validParams)
-      await expect(siwsMessage.verifyAzeroId()).resolves.toEqual(true)
-    })
-
-    it("should resolve true even for unresolvable azero ids", async () => {
-      const siwsMessage = new SiwsMessage({ ...validParams, azeroId: "thisisafake.azero" })
-      await expect(siwsMessage.verifyAzeroId()).resolves.toEqual(true)
     })
   })
 
@@ -392,7 +380,9 @@ on two lines`,
           SR25519_VECTOR.address,
         )
         expect(siwsMessage.address).toEqual(SR25519_VECTOR.address)
-        expect(siwsMessage.azeroId).toEqual("siws.azero")
+        // the vector message carries a legacy `(siws.azero)` line: it is tolerated on parse
+        // (message still verifies) but azeroId is no longer captured onto the instance
+        expect((siwsMessage as unknown as { azeroId?: string }).azeroId).toBeUndefined()
       })
 
       it("should throw when the signature is invalid", async () => {

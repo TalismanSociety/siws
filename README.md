@@ -85,9 +85,9 @@ const handleSignInRequest = ({ signature, message, address }) => {
 }
 ```
 
-## Deprecations
+## Breaking changes
 
-- **Azero ID resolution**: the `azeroId` field is still parsed and rendered for message compatibility, but is no longer resolved on-chain. `SiwsMessage.verifyAzeroId()` is deprecated and always resolves to `true`.
+- **Azero ID removed**: the `azeroId` field, its rendering into the signed message, and the `SiwsMessage.verifyAzeroId()` method have been removed. Azero ID was never cryptographically authenticated (only the address is), so it must not be trusted as an identity — resolve it yourself after verification if you need it. Remove `azeroId` from any `SiwsMessage` construction. Messages signed by older clients that still contain a `(name.azero)` line remain **verifiable**: the line is tolerated on parse and ignored.
 
 ## Documentation
 
