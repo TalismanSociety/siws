@@ -6,7 +6,7 @@ To sign in, users have to first connect their wallet to your dapp. After that, t
 
 ## Repo Setup
 
-Let's begin with a TanStack Start app. You can scaffold one following the [TanStack Start quickstart](https://tanstack.com/start/latest/docs/framework/react/quick-start), or clone the [SIWS demo app](https://github.com/TalismanSociety/siws/tree/main/apps/demo). Then install siws and jose (for JWTs):
+Let's begin with a [TanStack Start](https://tanstack.com/start/latest/docs/framework/react/quick-start) app — though any React setup works. Install siws and jose (for JWTs):
 
 ```bash
 npm install @talismn/siws jose
@@ -14,24 +14,19 @@ npm install @talismn/siws jose
 
 That's it — no wallet SDK required. Substrate wallet extensions all inject the same standard interface at `window.injectedWeb3`, and our examples talk to it directly so they stay framework agnostic. For a real application, we recommend using a JavaScript framework for Substrate to handle wallet connections, such as [polkadot-api](https://papi.how) or the legacy [polkadot.js](https://polkadot.js.org/docs/) libraries.
 
-## Wallet helpers
+## Connect wallet
 
-Let's create a small set of typed helpers around `window.injectedWeb3`:
+Connecting a wallet is two calls: `enable()` the extension, then read its accounts.
 
 ```typescript
 // src/lib/wallet.ts
 
-export type WalletAccount = {
-  address: string
-  meta: { name?: string; source: string }
-}
+export type InjectedAccount = { address: string; name?: string }
 
-type InjectedAccount = { address: string; name?: string; type?: string }
-
+// the object returned by enable() — its `signer` can sign SIWS messages directly
 export type Injected = {
   accounts: {
     get: () => Promise<InjectedAccount[]>
-    subscribe: (cb: (accounts: InjectedAccount[]) => void) => () => void
   }
   signer: {
     signRaw?: (payload: {
@@ -42,176 +37,68 @@ export type Injected = {
   }
 }
 
-type InjectedWindowProvider = {
-  enable: (originName: string) => Promise<Injected>
-  version?: string
-}
-
-declare global {
-  interface Window {
-    injectedWeb3?: Record<string, InjectedWindowProvider>
-  }
-}
-
-export const APP_NAME = "Sign-In with Substrate Demo"
-
-const enabled = new Map<string, Promise<Injected>>()
-
-export const getWalletSources = (): string[] => Object.keys(window.injectedWeb3 ?? {})
-
-export const getInjected = (source: string): Promise<Injected> => {
-  const provider = window.injectedWeb3?.[source]
+export const connectWallet = async (source = "talisman"): Promise<Injected> => {
+  const provider = (window as any).injectedWeb3?.[source]
   if (!provider) throw new Error(`Wallet extension not found: ${source}`)
-  let injected = enabled.get(source)
-  if (!injected) {
-    injected = provider.enable(APP_NAME)
-    enabled.set(source, injected)
-  }
-  return injected
-}
-
-const withSource = (accounts: InjectedAccount[], source: string): WalletAccount[] =>
-  accounts.map(({ address, name }) => ({ address, meta: { name, source } }))
-
-export const getAccounts = async (): Promise<WalletAccount[]> => {
-  const all = await Promise.all(
-    getWalletSources().map(async source => {
-      try {
-        const injected = await getInjected(source)
-        return withSource(await injected.accounts.get(), source)
-      } catch {
-        // user rejected access or extension misbehaved — skip it
-        return []
-      }
-    }),
-  )
-  return all.flat()
-}
-
-export const subscribeAccounts = async (
-  cb: (accounts: WalletAccount[]) => void,
-): Promise<() => void> => {
-  const latest = new Map<string, WalletAccount[]>()
-  const unsubs = await Promise.all(
-    getWalletSources().map(async source => {
-      try {
-        const injected = await getInjected(source)
-        return injected.accounts.subscribe(accounts => {
-          latest.set(source, withSource(accounts, source))
-          cb(Array.from(latest.values()).flat())
-        })
-      } catch {
-        return () => {}
-      }
-    }),
-  )
-  return () => {
-    for (const unsub of unsubs) unsub()
-  }
+  return provider.enable("SIWS Demo")
 }
 ```
 
-## Connect wallet
-
-We will then create a connect wallet component so you can connect your wallet to the dApp.
+Now a small component to trigger the connection:
 
 ```tsx
 // src/components/demo/ConnectWallet.tsx
 
-import { useState } from "react"
-import { getAccounts, type WalletAccount } from "../../lib/wallet"
+import { connectWallet, type Injected, type InjectedAccount } from "../../lib/wallet"
 
 type Props = {
-  onAccounts: (accounts: WalletAccount[]) => void
+  onConnect: (injected: Injected, accounts: InjectedAccount[]) => void
 }
 
-export const ConnectWallet: React.FC<Props> = ({ onAccounts }) => {
-  const [connecting, setConnecting] = useState(false)
-
+export const ConnectWallet: React.FC<Props> = ({ onConnect }) => {
   const handleConnectWallet = async () => {
-    setConnecting(true)
-    try {
-      onAccounts(await getAccounts())
-    } catch {
-    } finally {
-      setConnecting(false)
-    }
+    const injected = await connectWallet()
+    onConnect(injected, await injected.accounts.get())
   }
 
-  return (
-    <div className="flex flex-col">
-      <p className="text-white text-lg">Try it out</p>
-      <p className="text-stone-500 mb-4">Connect your wallet to try out this cloneable demo app.</p>
-      <button onClick={handleConnectWallet} disabled={connecting}>
-        {connecting ? "Connecting wallet..." : "Connect Wallet"}
-      </button>
-    </div>
-  )
+  return <button onClick={handleConnectWallet}>Connect Wallet</button>
 }
 ```
 
-## Manage connected wallets
+## Manage the connection
 
-Now let's render this component somewhere so we can conditionally show the connect wallet page only if wallet is not connected and keep track of all connected wallets.
+Keep the connection and its accounts in state so we can show the sign in page once connected:
 
 ```tsx
 // src/components/demo/index.tsx
 
-import { useCallback, useEffect, useState } from "react"
-import { subscribeAccounts, type WalletAccount } from "../../lib/wallet"
+import { useState } from "react"
+import type { Injected, InjectedAccount } from "../../lib/wallet"
 import { ConnectWallet } from "./ConnectWallet"
 
 export const Demo = () => {
-  const [accounts, setAccounts] = useState<WalletAccount[] | undefined>()
-  const [subscribed, setSubscribed] = useState(false)
-
-  // subscribe to extension changes after first connect
-  const subscribeToExtensions = useCallback(async () => {
-    if (accounts === undefined || subscribed) return
-
-    setSubscribed(true)
-    subscribeAccounts(newAccounts => {
-      // dont update if newAccounts is same as accounts
-      const newAddresses = newAccounts.map(account => account.address).join("")
-      const oldAddresses = accounts.map(account => account.address).join("")
-      if (newAddresses === oldAddresses) return
-
-      // update accounts list
-      setAccounts(newAccounts)
-    })
-  }, [accounts, subscribed])
-
-  useEffect(() => {
-    subscribeToExtensions()
-  }, [subscribeToExtensions])
+  const [injected, setInjected] = useState<Injected>()
+  const [accounts, setAccounts] = useState<InjectedAccount[]>()
 
   return (
     <div className="w-full">
-      <div className="border-stone-800 border p-4 rounded-xl w-full min-h-[384px] sm:h-96 flex flex-col flex-1">
-        {accounts ? <p>Sign in page</p> : <ConnectWallet onAccounts={setAccounts} />}
-      </div>
+      {accounts ? (
+        <p>Sign in page</p>
+      ) : (
+        <ConnectWallet
+          onConnect={(injected, accounts) => {
+            setInjected(injected)
+            setAccounts(accounts)
+          }}
+        />
+      )}
     </div>
-  )
-}
-```
-
-Now render the demo app in whichever route you want, for example, `src/routes/index.tsx`:
-
-```tsx
-import { createFileRoute } from "@tanstack/react-router"
-import { Demo } from "../components/demo"
-
-export const Route = createFileRoute("/")({
-  component: Home,
-})
-
-function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <Demo />
-    </main>
   )
 }
 ```
 
 You should be able to connect your wallet now! We will begin with the sign in flow in the next page.
+
+:::tip
+A production dapp usually supports multiple wallet extensions and reacts to account changes. See the demo app's [`wallet.ts`](https://github.com/TalismanSociety/siws/blob/main/apps/demo/src/lib/wallet.ts) for a complete implementation with multi-wallet aggregation and account subscriptions.
+:::

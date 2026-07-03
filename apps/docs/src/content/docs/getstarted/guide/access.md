@@ -46,8 +46,8 @@ Remember in the `src/components/demo/SignIn.tsx` we called `onSignedIn` after a 
 ```tsx
 // src/components/demo/index.tsx
 
-import { useCallback, useEffect, useState } from "react"
-import type { WalletAccount } from "../../lib/wallet"
+import { useState } from "react"
+import type { Injected, InjectedAccount } from "../../lib/wallet"
 import { ConnectWallet } from "./ConnectWallet"
 import { SignIn } from "./SignIn"
 import { Profile } from "./Profile"
@@ -56,35 +56,35 @@ export const Demo = () => {
   // ...
 
   // create states to hold the JWT token and the signed in account
-  const [signedInWith, setSignedInWith] = useState<WalletAccount | undefined>()
+  const [signedInWith, setSignedInWith] = useState<InjectedAccount | undefined>()
   const [jwtToken, setJwtToken] = useState<string | undefined>()
 
   // called when `onSignedIn` is invoked
-  const handleSignedIn = (selectedAccount: WalletAccount, jwtToken: string) => {
+  const handleSignedIn = (selectedAccount: InjectedAccount, jwtToken: string) => {
     setJwtToken(jwtToken)
     setSignedInWith(selectedAccount)
   }
 
-  useEffect(() => {
-    subscribeToExtensions()
-  }, [subscribeToExtensions])
-
   return (
     <div className="w-full">
-      <div className="border-stone-800 border p-4 rounded-xl w-full min-h-[384px] sm:h-96 flex flex-col flex-1">
-        {/* shows a page to access the protected service */}
-        {signedInWith && !!jwtToken ? (
-          <Profile jwtToken={jwtToken} />
-        ) : accounts ? (
-          <SignIn
-            accounts={accounts}
-            onCancel={() => setAccounts(undefined)}
-            onSignedIn={handleSignedIn}
-          />
-        ) : (
-          <ConnectWallet onAccounts={setAccounts} />
-        )}
-      </div>
+      {/* shows a page to access the protected service */}
+      {signedInWith && !!jwtToken ? (
+        <Profile jwtToken={jwtToken} />
+      ) : injected && accounts ? (
+        <SignIn
+          injected={injected}
+          accounts={accounts}
+          onCancel={() => setAccounts(undefined)}
+          onSignedIn={handleSignedIn}
+        />
+      ) : (
+        <ConnectWallet
+          onConnect={(injected, accounts) => {
+            setInjected(injected)
+            setAccounts(accounts)
+          }}
+        />
+      )}
     </div>
   )
 }

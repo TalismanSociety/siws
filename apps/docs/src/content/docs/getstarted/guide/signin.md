@@ -10,51 +10,37 @@ Now that your wallet is connected, lets select an account to sign in with! We'll
 // src/components/demo/SignIn.tsx
 
 import { useState } from "react"
-import type { WalletAccount } from "../../lib/wallet"
+import type { Injected, InjectedAccount } from "../../lib/wallet"
 
 type Props = {
-  accounts: WalletAccount[]
+  injected: Injected
+  accounts: InjectedAccount[]
   onCancel: () => void
 }
 
-export const SignIn: React.FC<Props> = ({ accounts, onCancel }) => {
+export const SignIn: React.FC<Props> = ({ injected, accounts, onCancel }) => {
   // auto select if only 1 account is connected
-  const [selectedAccount, setSelectedAccount] = useState<WalletAccount | undefined>(
+  const [selectedAccount, setSelectedAccount] = useState<InjectedAccount | undefined>(
     accounts.length === 1 ? accounts[0] : undefined,
   )
 
   return (
     <div className="h-full flex flex-1 flex-col">
-      <p className="text-white text-lg">Sign In</p>
-      <p className="text-stone-500">Select an account to sign in with.</p>
-      <div className="my-4 flex flex-col h-full overflow-y-auto gap-3 p-2 rounded-lg border border-stone-800">
-        {accounts.length > 0 ? (
-          accounts.map(account => (
-            <button
-              type="button"
-              key={account.address}
-              onClick={() => setSelectedAccount(account)}
-              className={`cursor-pointer p-4 border border-solid rounded-lg text-left ${
-                selectedAccount?.address === account.address
-                  ? "text-white border-white"
-                  : "text-gray-400 border-transparent"
-              }`}
-            >
-              <p>{account.meta.name ?? account.address}</p>
-            </button>
-          ))
-        ) : (
-          <p className="text-stone-500 text-center mt-4">
-            No account connected.
-            <br />
-            Connect at least 1 account to sign in with.
-          </p>
-        )}
+      <p>Select an account to sign in with.</p>
+      <div className="my-4 flex flex-col gap-3">
+        {accounts.map(account => (
+          <button
+            type="button"
+            key={account.address}
+            onClick={() => setSelectedAccount(account)}
+            className={selectedAccount?.address === account.address ? "text-white" : "text-gray-400"}
+          >
+            {account.name ?? account.address}
+          </button>
+        ))}
       </div>
-      <div className="grid gap-3">
-        <button disabled={!selectedAccount}>Sign In</button>
-        <button onClick={onCancel}>Cancel</button>
-      </div>
+      <button disabled={!selectedAccount}>Sign In</button>
+      <button onClick={onCancel}>Cancel</button>
     </div>
   )
 }
@@ -65,15 +51,16 @@ Let's add this back into `src/components/demo/index.tsx` to display it after you
 ```tsx
 // ...
 
-<div className="w-full">
-  <div className="border-stone-800 border p-4 rounded-xl w-full min-h-[384px] sm:h-96 flex flex-col flex-1">
-    {accounts ? (
-      <SignIn accounts={accounts} onCancel={() => setAccounts(undefined)} />
-    ) : (
-      <ConnectWallet onAccounts={setAccounts} />
-    )}
-  </div>
-</div>
+{injected && accounts ? (
+  <SignIn injected={injected} accounts={accounts} onCancel={() => setAccounts(undefined)} />
+) : (
+  <ConnectWallet
+    onConnect={(injected, accounts) => {
+      setInjected(injected)
+      setAccounts(accounts)
+    }}
+  />
+)}
 
 // ...
 ```
@@ -87,17 +74,16 @@ You should now be able to select an account from your connected wallets to sign 
 // ...
 
 import { Address, SiwsMessage } from "@talismn/siws"
-import { getInjected } from "../../lib/wallet"
 import { getNonce, verifySignIn } from "../../server/auth"
 
 // ...
 
 type Props = {
   // ...
-  onSignedIn: (account: WalletAccount, jwtToken: string) => void
+  onSignedIn: (account: InjectedAccount, jwtToken: string) => void
 }
 
-export const SignIn: React.FC<Props> = ({ accounts, onCancel, onSignedIn }) => {
+export const SignIn: React.FC<Props> = ({ injected, accounts, onCancel, onSignedIn }) => {
 
   // ...
 
@@ -128,12 +114,9 @@ export const SignIn: React.FC<Props> = ({ accounts, onCancel, onSignedIn }) => {
         chainName: "Polkadot",
       })
 
-      // get the injected extension of your account's wallet to create a signature prompt.
-      // `sign()` accepts any object exposing `signer.signRaw` — the object returned by
-      // the extension's `enable()` works directly, no wallet SDK needed
-      const injected = await getInjected(selectedAccount.meta.source)
-
-      // sign the SIWS message
+      // sign the SIWS message with the connected wallet.
+      // `sign()` accepts any object exposing `signer.signRaw` — the `injected`
+      // object we got from the extension's `enable()` works directly
       const signed = await siwsMessage.sign(injected)
 
       // send the signature and signed message to backend for verification
