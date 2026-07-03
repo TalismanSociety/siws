@@ -4,11 +4,18 @@
   "packageManager": "pnpm@11.5.2",
   "scripts": {
     "prepare": "husky install",
-    "build": "pnpm -r build",
-    "test": "pnpm -r test",
     "dev": "pnpm --parallel --filter @talismn/siws --filter siws-demo run dev",
+    "dev:docs": "pnpm --filter siwsdocs-astro dev",
+    "dev:all": "pnpm --parallel --filter @talismn/siws --filter siws-demo --filter siwsdocs-astro run dev",
+    "build": "pnpm -r build",
+    "build:lib": "pnpm --filter @talismn/siws build",
+    "build:demo": "pnpm --filter siws-demo build",
+    "build:docs": "pnpm --filter siws-demo build:docs",
+    "test": "pnpm -r test",
+    "lint": "biome check . --error-on-warnings",
     "format": "biome format --write .",
-    "lint": "biome check . --error-on-warnings"
+    "preview": "pnpm --filter siws-demo build && pnpm --filter siws-demo preview",
+    "deploy": "pnpm --filter siws-demo deploy"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.0",

@@ -24,18 +24,36 @@ Requires [pnpm](https://pnpm.io) 11+.
 ```bash
 pnpm install
 
+# lib tsc --watch + demo vite dev (http://localhost:5173), in parallel
+pnpm dev
+
+# docs dev server with hot reload (http://localhost:4321/docs/)
+pnpm dev:docs
+
+# lib + demo + docs dev servers, all in parallel
+pnpm dev:all
+
 # build everything (lib first, then apps)
 pnpm build
 
-# run lib tests
-pnpm --filter @talismn/siws test
+# scoped builds
+pnpm build:lib    # library only
+pnpm build:demo   # demo app (includes a fresh docs build copied to /docs)
+pnpm build:docs   # rebuild docs + copy into the demo's public/docs
 
-# lib tsc --watch + demo next dev, in parallel
-pnpm dev
+# run tests
+pnpm test
 
 # format / lint (biome)
 pnpm format
 pnpm lint
+
+# preview the built demo (app + docs) in the workerd runtime
+pnpm preview
+
+# deploy demo + docs to Cloudflare Workers
+# ("run" is required — plain `pnpm deploy` triggers pnpm's built-in deploy command)
+pnpm run deploy
 ```
 
 ## Releases
