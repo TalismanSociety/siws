@@ -3,10 +3,11 @@
   "name": "siws-demo",
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry",
+  "main": "src/server-entry.ts",
   "routes": [
     { "pattern": "siws.xyz", "custom_domain": true },
-    { "pattern": "demo.siws.xyz", "custom_domain": true }
+    { "pattern": "demo.siws.xyz", "custom_domain": true },
+    { "pattern": "docs.siws.xyz", "custom_domain": true }
   ]
   // JWT_SECRET is provided via `.dev.vars` locally and `wrangler secret put JWT_SECRET` in production
 }
