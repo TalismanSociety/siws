@@ -1,0 +1,127 @@
+import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { getInjected, type WalletAccount } from "@/lib/wallet"
+import { getNonce, verifySignIn } from "@/server/auth"
+import { Address, SiwsMessage } from "@talismn/siws"
+import { useToast } from "../ui/use-toast"
+import { Account } from "./Account"
+import { ToastAction } from "../ui/toast"
+import { SIWS_DOMAIN } from "../../lib/constants"
+
+type Props = {
+  accounts: WalletAccount[]
+  onCancel: () => void
+  onSignedIn: (account: WalletAccount, jwtToken: string) => void
+}
+
+export const SignIn: React.FC<Props> = ({ accounts, onCancel, onSignedIn }) => {
+  const { dismiss, toast } = useToast()
+
+  // auto select if only 1 account is connected
+  const [selectedAccount, setSelectedAccount] = useState<WalletAccount | undefined>(
+    accounts.length === 1 ? accounts[0] : undefined,
+  )
+  const [signingIn, setSigningIn] = useState(false)
+
+  const handleSignIn = async () => {
+    try {
+      dismiss()
+      if (!selectedAccount) throw new Error("No account selected!")
+
+      const address = Address.fromSs58(selectedAccount.address ?? "")
+      if (!address)
+        return toast({
+          title: "Invalid address",
+          description: "Your address is not a valid Substrate address.",
+        })
+
+      setSigningIn(true)
+      // request nonce from server
+      const { nonce } = await getNonce()
+
+      const siwsMessage = new SiwsMessage({
+        domain: SIWS_DOMAIN,
+        uri: `https://${SIWS_DOMAIN}`,
+        // use prefix of chain your dapp is on:
+        address: address.toSs58(0),
+        nonce,
+        statement: "Welcome to SIWS! Sign in to see how it works.",
+        chainName: "Polkadot",
+        // expires in 2 mins
+        expirationTime: Date.now() + 2 * 60 * 1000,
+      })
+
+      // sign the SIWS message with the wallet's raw signer —
+      // any Substrate signing interface works, the backend verifies the result
+      const injected = await getInjected(selectedAccount.meta.source)
+      if (!injected.signer.signRaw) throw new Error("Wallet does not support signing message.")
+
+      const message = siwsMessage.prepareMessage()
+      const { signature } = await injected.signer.signRaw({
+        address: address.toSs58(0),
+        data: message,
+        type: "payload",
+      })
+
+      const { jwtToken } = await verifySignIn({
+        data: { message, signature, address: address.toSs58(0) },
+      })
+
+      // Hooray we're signed in!
+      onSignedIn(selectedAccount, jwtToken)
+    } catch (e) {
+      toast({
+        title: "Uh oh! Couldn't sign in.",
+        description: e instanceof Error ? e.message : "An error occurred",
+        variant: "destructive",
+        action: (
+          <ToastAction altText="Try Again" onClick={handleSignIn}>
+            Try Again
+          </ToastAction>
+        ),
+      })
+    } finally {
+      setSigningIn(false)
+    }
+  }
+
+  // dismiss toast when sign in flow is exited
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run cleanup only on unmount
+  useEffect(() => () => dismiss(), [])
+
+  return (
+    <div className="h-full flex flex-1 flex-col">
+      <p className="text-white text-lg">Sign In</p>
+      <p className="text-stone-500">Select an account to sign in with.</p>
+      <div className="my-4 flex flex-col h-full overflow-y-auto gap-3 p-2 rounded-lg border border-stone-800">
+        {accounts.length > 0 ? (
+          accounts.map(account => (
+            <Account
+              key={account.address}
+              account={account}
+              selected={selectedAccount?.address === account.address}
+              onSelect={() => {
+                dismiss()
+                setSelectedAccount(account)
+              }}
+            />
+          ))
+        ) : (
+          <p className="text-stone-500 text-center mt-4">
+            No account connected.
+            <br />
+            Connect at least 1 account to sign in with.
+          </p>
+        )}
+      </div>
+      <div className="grid gap-3">
+        <Button disabled={!selectedAccount || signingIn} onClick={handleSignIn}>
+          {signingIn ? "Signing In..." : "Sign In"}
+        </Button>
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,18 @@
+{
+  "clearMocks": true,
+  "extensionsToTreatAsEsm": [".ts"],
+  "coverageProvider": "v8",
+  "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  },
+  "transform": {
+    "^.+\\.ts?$": [
+      "ts-jest",
+      {
+        "useESM": true
+      }
+    ],
+    "^.+\\.js$": "babel-jest"
+  },
+  "transformIgnorePatterns": ["/node_modules/\\.pnpm/(?!(@noble|@scure)\\+)"]
+}

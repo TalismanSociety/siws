@@ -1,0 +1,45 @@
+{
+  "name": "@talismn/siws",
+  "description": "Sign-In with Substrate",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest --verbose --coverage"
+  },
+  "author": "chrisling-dev",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.23.3",
+    "@babel/preset-env": "^7.23.3",
+    "@babel/preset-typescript": "^7.23.3",
+    "@types/jest": "^29.5.8",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@noble/curves": "^2.2.0",
+    "@noble/hashes": "^2.2.0",
+    "@scure/base": "^2.2.0",
+    "@scure/sr25519": "^2.2.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TalismanSociety/siws.git",
+    "directory": "packages/siws"
+  },
+  "bugs": {
+    "url": "https://github.com/TalismanSociety/siws/issues"
+  },
+  "homepage": "https://github.com/TalismanSociety/siws#readme"
+}
