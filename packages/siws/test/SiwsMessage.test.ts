@@ -121,10 +121,12 @@ on two lines`,
 
   describe("asJson", () => {
     it("should return the same params as json object", () => {
-      expect(validSiwsMessage.asJson).toEqual({
+      // capture once: issuedAt falls back to Date.now() on each access
+      const json = validSiwsMessage.asJson
+      expect(json).toEqual({
         ...validParams,
         chainName: "Substrate",
-        issuedAt: validSiwsMessage.asJson.issuedAt,
+        issuedAt: json.issuedAt,
         version: Siws.CURRENT_VERSION,
       })
     })
