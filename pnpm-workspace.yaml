@@ -1,6 +1,9 @@
 packages:
   - packages/*
   - apps/*
+overrides:
+  # yaml <2.8.3 pulled transitively by @astrojs/check's language server (build-time only)
+  yaml: ">=2.8.3"
 allowBuilds:
   esbuild: true
   sharp: true
