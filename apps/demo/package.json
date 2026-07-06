@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "pnpm run build:docs && vite build && tsc --noEmit",
+    "build": "pnpm run build:lib && pnpm run build:docs && vite build && tsc --noEmit",
+    "build:lib": "pnpm --filter @talismn/siws build",
     "build:docs": "pnpm --filter siwsdocs-astro build && rm -rf public/docs && cp -R ../docs/dist public/docs",
     "preview": "vite preview",
     "deploy": "pnpm run build && wrangler deploy",
