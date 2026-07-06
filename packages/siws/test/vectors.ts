@@ -78,6 +78,30 @@ export const ECDSA_VECTOR: SchemeVector = {
     "0x0255d39eedbecaea93f4abc7ac337d05f76e985c7a443e738c50d8eb28436d38bf095d01a5ea0f821981120d29f70fe306660b56d8de0c9872f9e47da47984af0b00",
 }
 
+/**
+ * Captured from a real Ledger device (Polkadot Generic app) signing a Talisman
+ * `signRaw` request. The app follows the Substrate convention for payloads over
+ * 256 bytes: it signs blake2b-256(<Bytes>message</Bytes>), not the raw bytes.
+ * ed25519, signature is over the 32-byte hash of the 328-byte wrapped message.
+ */
+export const LEDGER_ED25519_HASHED_VECTOR = {
+  address: "13TtFyPPgw2ZU4TmH8bmR27Q1qTiT6XPTAprUbkgsJEWEjJx",
+  message: [
+    `siws.xyz wants you to sign in with your Polkadot account:`,
+    `13TtFyPPgw2ZU4TmH8bmR27Q1qTiT6XPTAprUbkgsJEWEjJx`,
+    ``,
+    `Welcome to SIWS! Sign in to see how it works.`,
+    ``,
+    `URI: https://siws.xyz`,
+    `Version: 1.0.0`,
+    `Nonce: 6fdc70db-e2b8-4c54-880b-91908df961e5`,
+    `Issued At: 2026-07-06T07:48:58.645Z`,
+    `Expiration Time: 2026-07-06T07:50:58.645Z`,
+  ].join("\n"),
+  signature:
+    "0x1d883bbf527b8483959e5a61effbee330ff85d820901ca0081a4d4876b9adbef9f27b90d5e01d1d96222d037fa9fa591b88f6eb3faac3186f53023a674ed6b0e",
+}
+
 /** encodeAddress(publicKey, prefix) outputs, covering 1-byte and 2-byte ss58 prefixes */
 export const SS58_VECTOR = {
   publicKey: "0x289356c5b3ae788acb730b508830de4a297a3d4ac4519f6859c899b49673c67c",
