@@ -141,7 +141,9 @@ const verifySingle = (
  * Verifies that `signature` over `message` was produced by `addressOrPublicKey`.
  * Supports sr25519, ed25519 and ecdsa signatures (raw or type-prefixed), and retries
  * with the message wrapped in / stripped of `<Bytes>...</Bytes>`, matching how wallet
- * extensions wrap `signRaw` payloads.
+ * extensions wrap `signRaw` payloads. Payloads over 256 bytes are also retried as
+ * their blake2b-256 hash, matching signers that follow the Substrate convention of
+ * hashing large payloads before signing (e.g. Ledger Polkadot Generic app).
  */
 export function verifySignature(
   message: string | Uint8Array,
@@ -157,16 +159,22 @@ export function verifySignature(
       `Invalid signature length, expected [64..66] bytes, found ${signatureU8a.length}`,
     )
 
-  const first = verifySingle(messageU8a, signatureU8a, publicKey)
-  if (first.isValid) return { ...first, publicKey }
+  const candidates: Uint8Array[] = [messageU8a]
 
   // ethereum-prefixed messages are never <Bytes>-wrapped, no retry
-  if (startsWith(messageU8a, ETHEREUM_PREFIX) && !isWrappedBytes(messageU8a))
-    return { ...first, publicKey }
+  if (!(startsWith(messageU8a, ETHEREUM_PREFIX) && !isWrappedBytes(messageU8a))) {
+    const toggled = isWrappedBytes(messageU8a)
+      ? messageU8a.subarray(WRAP_PREFIX.length, messageU8a.length - WRAP_POSTFIX.length)
+      : concatBytes(WRAP_PREFIX, messageU8a, WRAP_POSTFIX)
+    candidates.push(toggled)
 
-  const retryMessage = isWrappedBytes(messageU8a)
-    ? messageU8a.subarray(WRAP_PREFIX.length, messageU8a.length - WRAP_POSTFIX.length)
-    : concatBytes(WRAP_PREFIX, messageU8a, WRAP_POSTFIX)
+    for (const m of [messageU8a, toggled])
+      if (m.length > 256) candidates.push(blake2b(m, { dkLen: 32 }))
+  }
 
-  return { ...verifySingle(retryMessage, signatureU8a, publicKey), publicKey }
+  for (const candidate of candidates) {
+    const result = verifySingle(candidate, signatureU8a, publicKey)
+    if (result.isValid) return { ...result, publicKey }
+  }
+  return { crypto: "none", isValid: false, publicKey }
 }
