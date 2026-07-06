@@ -14,9 +14,13 @@ export default defineConfig({
         replacesTitle: true,
       },
       customCss: ["./src/styles/custom.css"],
-      social: {
-        github: "https://github.com/TalismanSociety/siws",
-      },
+      social: [
+        {
+          icon: "github",
+          label: "GitHub",
+          href: "https://github.com/TalismanSociety/siws",
+        },
+      ],
       sidebar: [
         {
           label: "Sign-In with Substrate",
